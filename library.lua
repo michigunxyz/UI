@@ -767,47 +767,45 @@ local Airflow = (function()
         local value46=createRangeAdapter(value42,value43,value44)
         local cardFrame3,cardStroke2=createCard(self,text3,descriptionCardHeight,configuration30)
         decorateCard(cardFrame3,cardStroke2)
-        createLabel{Position=UDim2.fromOffset(14,12),Size=UDim2.new(1,-120,0,18),Text=configuration30.Name or"Slider",Parent=cardFrame3}
-        local value47=createInstance(text3,{AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,-10,0,9),Size=UDim2.fromOffset(40,24),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,ClipsDescendants=true,Parent=cardFrame3})
+        local sliderTitle=createLabel{Position=UDim2.fromOffset(14,12),Size=UDim2.new(1,-120,0,18),Text=configuration30.Name or"Slider",Parent=cardFrame3}
+        local value47=createInstance(text3,{Name="ValueField",AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-14,0,21),Size=UDim2.fromOffset(56,28),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,ClipsDescendants=true,Parent=cardFrame3})
         addCorner(value47,UDim.new(0,6))
         local stroke3=addStroke(value47)
-        local textLabel4=createLabel{Size=UDim2.new(1,0,1,0),TextSize=13,TextColor3=nativeTheme2.Accent,TextXAlignment=Enum.TextXAlignment.Center,TextTruncate=Enum.TextTruncate.None,Parent=value47}
-        local textBox=createInstance("TextBox",{Position=UDim2.fromOffset(9,0),Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,BackgroundTransparency=1,Text="",TextColor3=nativeTheme2.Text,TextSize=13,FontFace=nativeFonts.Medium,TextXAlignment=Enum.TextXAlignment.Left,ClearTextOnFocus=false,Visible=false,Parent=value47})
+        local textLabel4=createLabel{Name="Value",AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=UDim2.new(1,-20,1,0),TextSize=13,TextColor3=nativeTheme2.Accent,TextYAlignment=Enum.TextYAlignment.Center,TextXAlignment=Enum.TextXAlignment.Center,TextTruncate=Enum.TextTruncate.None,Parent=value47}
+        local textBox=createInstance("TextBox",{Name="ValueInput",AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=UDim2.new(1,-20,1,0),AutomaticSize=Enum.AutomaticSize.None,BackgroundTransparency=1,Text="",TextColor3=nativeTheme2.Text,TextSize=13,FontFace=nativeFonts.Medium,TextXAlignment=Enum.TextXAlignment.Center,TextYAlignment=Enum.TextYAlignment.Center,ClearTextOnFocus=false,Visible=false,Parent=value47})
         createInstance("UISizeConstraint",{MinSize=Vector2.new(14,0),Parent=textBox})
         local textLabel5=createLabel{Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,Text=value45,TextSize=13,TextColor3=nativeTheme2.Accent,TextTruncate=Enum.TextTruncate.None,Visible=false,Parent=value47}
         local textButton,enabled5=createInstance("TextButton",{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text="",AutoButtonColor=false,ZIndex=2,Parent=value47}),false
-        local function callback7(configuration31)
-            local value48
-            if enabled5 then
-                value48=9+textBox.AbsoluteSize.X/self.Window.Scale.Scale+textLabel5.TextBounds.X+9
-                textLabel5.Position=UDim2.fromOffset(9+textBox.AbsoluteSize.X/self.Window.Scale.Scale,0)
-            else
-                value48=textLabel4.TextBounds.X+18
-            end
-            value48=math.max(value48,36)
-            if configuration31 then
-                value47.Size=UDim2.fromOffset(value48,24)
-            else
-                animate(value47,{Size=UDim2.fromOffset(value48,24)},.2)
-            end
+        local function callback7()
+            local scale=math.max(math.min(self.Window.Scale.Scale,1),.01)
+            local suffixWidth=enabled5 and textLabel5.TextBounds.X/scale or 0
+            local textWidth=(enabled5 and textBox.TextBounds.X or textLabel4.TextBounds.X)/scale
+            local width=math.max(56,math.ceil(textWidth+suffixWidth+20))
+            value47.Size=UDim2.fromOffset(width,28)
+            textBox.Position=UDim2.new(.5,-suffixWidth/2,.5,0)
+            textBox.Size=UDim2.new(1,-20-suffixWidth,1,0)
+            textLabel5.AnchorPoint=Vector2.new(1,.5)
+            textLabel5.Position=UDim2.new(1,-10,.5,0)
+            sliderTitle.Size=UDim2.new(1,-width-sliderTitle.Position.X.Offset-28,0,18)
         end
         textLabel4:GetPropertyChangedSignal"TextBounds":Connect(function()
             if not enabled5 then
                 callback7(false)
             end
         end)
-        textBox:GetPropertyChangedSignal"AbsoluteSize":Connect(function()
+        textBox:GetPropertyChangedSignal"TextBounds":Connect(function()
             if enabled5 then
-                callback7(false)
+                callback7()
             end
         end)
-        local value49=createInstance(text3,{Position=UDim2.new(0,14,0,descriptionCardHeight-18),Size=UDim2.new(1,-28,0,5),BackgroundColor3=nativeTheme2.Surface3,BorderSizePixel=0,Parent=cardFrame3})
+        local valueScaleConnection=self.Window.Scale:GetPropertyChangedSignal"Scale":Connect(callback7)
+        local value48=createInstance(text3,{Position=UDim2.new(0,14,0,descriptionCardHeight-18),Size=UDim2.new(1,-28,0,5),BackgroundColor3=nativeTheme2.Surface3,BorderSizePixel=0,Parent=cardFrame3})
+        addCorner(value48,UDim.new(1,0))
+        local value49=createInstance(text3,{Size=UDim2.new(0,0,1,0),BackgroundColor3=nativeTheme2.Accent,BorderSizePixel=0,Parent=value48})
         addCorner(value49,UDim.new(1,0))
-        local value50=createInstance(text3,{Size=UDim2.new(0,0,1,0),BackgroundColor3=nativeTheme2.Accent,BorderSizePixel=0,Parent=value49})
+        local imageLabel5=createInstance("ImageLabel",{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(0,0,.5,0),Size=UDim2.fromOffset(28,28),BackgroundTransparency=1,Image=nativeAssets.Glow,ImageColor3=nativeTheme2.Accent,ImageTransparency=.85,ZIndex=2,Parent=value48})
+        local value50=createInstance(text3,{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(0,0,.5,0),Size=UDim2.fromOffset(12,12),BackgroundColor3=nativeTheme2.Accent,BorderSizePixel=0,ZIndex=3,Parent=value48})
         addCorner(value50,UDim.new(1,0))
-        local imageLabel5=createInstance("ImageLabel",{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(0,0,.5,0),Size=UDim2.fromOffset(28,28),BackgroundTransparency=1,Image=nativeAssets.Glow,ImageColor3=nativeTheme2.Accent,ImageTransparency=.85,ZIndex=2,Parent=value49})
-        local value51=createInstance(text3,{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(0,0,.5,0),Size=UDim2.fromOffset(12,12),BackgroundColor3=nativeTheme2.Accent,BorderSizePixel=0,ZIndex=3,Parent=value49})
-        addCorner(value51,UDim.new(1,0))
         local textButton2=createInstance("TextButton",{Position=UDim2.new(0,8,0,descriptionCardHeight-(isTouchDevice and 37 or 31)),Size=UDim2.new(1,-16,0,isTouchDevice and 40 or 28),BackgroundTransparency=1,Text="",AutoButtonColor=false,ZIndex=4,Parent=cardFrame3})
         local entries8,enabled6={Value=math.clamp(configuration30.Default or value42,value42,value43)},false
         textButton.MouseEnter:Connect(function()
@@ -830,15 +828,15 @@ local Airflow = (function()
             task.defer(callback7,false)
         end)
         textBox.FocusLost:Connect(function()
-            local value52=tonumber(textBox.Text)
+            local value51=tonumber(textBox.Text)
             enabled5=false
             textBox.Visible=false
             textLabel5.Visible=false
             textLabel4.Visible=true
             textButton.Visible=true
             animate(stroke3,{Color=nativeTheme2.Stroke},.2)
-            if value52 then
-                entries8:Set(value52)
+            if value51 then
+                entries8:Set(value51)
             end
             callback7(false)
         end)
@@ -856,21 +854,21 @@ local Airflow = (function()
         local function callback8()
             return value43-value42==0 and 0 or(entries8.Value-value42)/(value43-value42)
         end
-        local function callback9(configuration32,argument29,argument30)
+        local function callback9(configuration31,argument29,argument30)
             argument30=argument30 or Enum.EasingStyle.Linear
-            animate(value50,{Size=UDim2.new(configuration32,0,1,0)},argument29,argument30)
-            animate(value51,{Position=UDim2.new(configuration32,0,.5,0)},argument29,argument30)
-            animate(imageLabel5,{Position=UDim2.new(configuration32,0,.5,0)},argument29,argument30)
+            animate(value49,{Size=UDim2.new(configuration31,0,1,0)},argument29,argument30)
+            animate(value50,{Position=UDim2.new(configuration31,0,.5,0)},argument29,argument30)
+            animate(imageLabel5,{Position=UDim2.new(configuration31,0,.5,0)},argument29,argument30)
         end
-        local function callback10(configuration33,argument31)
-            callback9(callback8(),configuration33,argument31)
+        local function callback10(configuration32,argument31)
+            callback9(callback8(),configuration32,argument31)
             textLabel4.Text=value46.format(entries8.Value)..value45
         end
-        local function callback11(configuration34)
-            local value53=callback8()
-            local value54=math.max(value49.AbsoluteSize.X,1)
-            local value55=(value53>=configuration34 and 1 or-1)*(5/value54)
-            callback9(math.clamp(value53+value55,0,1),.22,Enum.EasingStyle.Quint)
+        local function callback11(configuration33)
+            local value52=callback8()
+            local value53=math.max(value48.AbsoluteSize.X,1)
+            local value54=(value52>=configuration33 and 1 or-1)*(5/value53)
+            callback9(math.clamp(value52+value54,0,1),.22,Enum.EasingStyle.Quint)
             task.delay(.22,function()
                 if not enabled6 then
                     callback9(callback8(),.18,Enum.EasingStyle.Quint)
@@ -879,142 +877,145 @@ local Airflow = (function()
             textLabel4.Text=value46.format(entries8.Value)..value45
         end
         local function callback12()
-            animate(value51,{Size=UDim2.fromOffset(14,12)},.08)
+            animate(value50,{Size=UDim2.fromOffset(14,12)},.08)
             animate(imageLabel5,{Size=UDim2.fromOffset(32,32),ImageTransparency=.78},.12)
             task.delay(.1,function()
-                animate(value51,{Size=UDim2.fromOffset(12,12)},.25,Enum.EasingStyle.Quint)
+                animate(value50,{Size=UDim2.fromOffset(12,12)},.25,Enum.EasingStyle.Quint)
                 animate(imageLabel5,{Size=UDim2.fromOffset(28,28),ImageTransparency=.85},.25)
             end)
         end
-        function entries8:Set(configuration35,argument32)
-            configuration35=snap(tonumber(configuration35)or value42)
-            if configuration35==entries8.Value then
+        function entries8:Set(configuration34,argument32)
+            configuration34=snap(tonumber(configuration34)or value42)
+            if configuration34==entries8.Value then
                 return
             end
-            local value56=callback8()
-            entries8.Value=configuration35
+            local value55=callback8()
+            entries8.Value=configuration34
             if enabled6 then
                 callback10(.05)
             else
-                callback11(value56)
+                callback11(value55)
                 callback12()
                 addCardGradient(cardStroke2)
             end
             if not argument32 then
-                invokeCallback(configuration30.Callback,configuration35)
+                invokeCallback(configuration30.Callback,configuration34)
             end
         end
         function entries8:Get()
             return entries8.Value
         end
-        local function callback13(configuration36)
-            local value57=math.clamp((configuration36-value49.AbsolutePosition.X)/value49.AbsoluteSize.X,0,1)
-            entries8:Set(value42+(value43-value42)*value57)
+        local function callback13(configuration35)
+            local value56=math.clamp((configuration35-value48.AbsolutePosition.X)/value48.AbsoluteSize.X,0,1)
+            entries8:Set(value42+(value43-value42)*value56)
         end
-        textButton2.InputBegan:Connect(function(configuration37)
-            if isPrimaryInput(configuration37)then
+        textButton2.InputBegan:Connect(function(configuration36)
+            if isPrimaryInput(configuration36)then
                 enabled6=true
-                animate(value51,{Size=UDim2.fromOffset(16,16)},.15,Enum.EasingStyle.Back)
+                animate(value50,{Size=UDim2.fromOffset(16,16)},.15,Enum.EasingStyle.Back)
                 animate(imageLabel5,{Size=UDim2.fromOffset(44,44),ImageTransparency=.7},.15)
                 callback13(getPointerPosition().X)
             end
         end)
-        self.Window:_listen("Changed",function(configuration38)
-            if enabled6 and isPointerMovement(configuration38)then
+        self.Window:_listen("Changed",function(configuration37)
+            if enabled6 and isPointerMovement(configuration37)then
                 callback13(getPointerPosition().X)
             end
         end,entries8)
-        self.Window:_listen("Ended",function(configuration39)
-            if enabled6 and isPrimaryInput(configuration39)then
+        self.Window:_listen("Ended",function(configuration38)
+            if enabled6 and isPrimaryInput(configuration38)then
                 enabled6=false
-                animate(value51,{Size=UDim2.fromOffset(12,12)},.2)
+                animate(value50,{Size=UDim2.fromOffset(12,12)},.2)
                 animate(imageLabel5,{Size=UDim2.fromOffset(28,28),ImageTransparency=.85},.2)
             end
         end,entries8)
         entries8.Value=snap(entries8.Value)
         callback10(0)
         task.defer(callback7,true)
+        table.insert(entries8._listeners,function()
+            valueScaleConnection:Disconnect()
+        end)
         return registerElement(self,configuration30,entries8,cardFrame3,"Slider")
     end
-    function NativeTab:Dropdown(configuration40)
+    function NativeTab:Dropdown(configuration39)
         local text4="Frame"
-        configuration40=normalizeOptions2(configuration40,{Title="Name",Description="Desc",CurrentOption="Default",Value="Default",MultipleOptions="Multi",Values="Options"})
-        if configuration40.Multi and type(configuration40.Default)~="table"and configuration40.Default~=nil then
-            configuration40.Default={configuration40.Default}
-        elseif not configuration40.Multi and type(configuration40.Default)=="table"then
-            configuration40.Default=configuration40.Default[1]
+        configuration39=normalizeOptions2(configuration39,{Title="Name",Description="Desc",CurrentOption="Default",Value="Default",MultipleOptions="Multi",Values="Options"})
+        if configuration39.Multi and type(configuration39.Default)~="table"and configuration39.Default~=nil then
+            configuration39.Default={configuration39.Default}
+        elseif not configuration39.Multi and type(configuration39.Default)=="table"then
+            configuration39.Default=configuration39.Default[1]
         end
-        local value58=configuration40.Multi==true
-        local value59=configuration40.Options or{}
-        local value60,value61,value62
-        configuration40,value60,value61,value62=offsetColor(self,configuration40,{},text4)
-        value60.ClipsDescendants=true
-        local textButton3=createInstance("TextButton",{Size=UDim2.new(1,0,0,value62),BackgroundTransparency=1,Text="",AutoButtonColor=false,Parent=value60})
-        local titleLabel,descriptionLabel=createCardLabels(textButton3,configuration40.Name or"Dropdown",configuration40.Desc,180)
-        local value63=createInstance(text4,{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-10,.5,0),Size=UDim2.fromOffset(60,chipHeight),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,ClipsDescendants=true,Parent=textButton3})
-        addCorner(value63,UDim.new(0,6))
-        local stroke4=addStroke(value63)
-        local textLabel6=createLabel{Position=UDim2.fromOffset(10,0),Size=UDim2.new(1,-34,1,0),TextColor3=nativeTheme2.Muted,TextSize=13,TextTruncate=Enum.TextTruncate.None,ClipsDescendants=true,Parent=value63}
-        local value64=measureText(value63,1,-6)
-        local textLabel7,text5=createLabel{Size=UDim2.fromOffset(0,chipHeight),AutomaticSize=Enum.AutomaticSize.X,TextSize=13,Visible=false,Parent=value63},""
+        local value57=configuration39.Multi==true
+        local value58=configuration39.Options or{}
+        local value59,value60,value61
+        configuration39,value59,value60,value61=offsetColor(self,configuration39,{},text4)
+        value59.ClipsDescendants=true
+        local textButton3=createInstance("TextButton",{Size=UDim2.new(1,0,0,value61),BackgroundTransparency=1,Text="",AutoButtonColor=false,Parent=value59})
+        local titleLabel,descriptionLabel=createCardLabels(textButton3,configuration39.Name or"Dropdown",configuration39.Desc,180)
+        local value62=createInstance(text4,{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-10,.5,0),Size=UDim2.fromOffset(60,chipHeight),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,ClipsDescendants=true,Parent=textButton3})
+        addCorner(value62,UDim.new(0,6))
+        local stroke4=addStroke(value62)
+        local textLabel6=createLabel{Position=UDim2.fromOffset(10,0),Size=UDim2.new(1,-34,1,0),TextColor3=nativeTheme2.Muted,TextSize=13,TextTruncate=Enum.TextTruncate.None,ClipsDescendants=true,Parent=value62}
+        local value63=measureText(value62,1,-6)
+        local textLabel7,text5=createLabel{Size=UDim2.fromOffset(0,chipHeight),AutomaticSize=Enum.AutomaticSize.X,TextSize=13,Visible=false,Parent=value62},""
         local function callback14()
             textLabel7.Text=text5
             if textLabel7.TextBounds.X<=146 then
                 return text5
             end
-            local value65=text5
-            while#value65>1 do
-                value65=value65:sub(1,-2)
-                textLabel7.Text=value65..".."
+            local value64=text5
+            while#value64>1 do
+                value64=value64:sub(1,-2)
+                textLabel7.Text=value64..".."
                 if textLabel7.TextBounds.X<=146 then
-                    return value65..".."
+                    return value64..".."
                 end
             end
             return".."
         end
-        local function callback15(configuration41)
-            local value66=math.clamp(textLabel6.TextBounds.X+10+34,60,190)
-            blendColor(titleLabel,descriptionLabel,value66+20)
-            if configuration41 then
-                value63.Size=UDim2.fromOffset(value66,chipHeight)
+        local function callback15(configuration40)
+            local value65=math.clamp(textLabel6.TextBounds.X+10+34,60,190)
+            blendColor(titleLabel,descriptionLabel,value65+20)
+            if configuration40 then
+                value62.Size=UDim2.fromOffset(value65,chipHeight)
             else
-                animate(value63,{Size=UDim2.fromOffset(value66,chipHeight)},.2)
+                animate(value62,{Size=UDim2.fromOffset(value65,chipHeight)},.2)
             end
         end
         textLabel6:GetPropertyChangedSignal"TextBounds":Connect(function()
             callback15(false)
         end)
-        local value67=createInstance(text4,{Position=UDim2.new(0,10,0,value62),Size=UDim2.new(1,-20,0,0),BackgroundTransparency=1,Parent=value60})
-        createInstance("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,4),Parent=value67})
+        local value66=createInstance(text4,{Position=UDim2.new(0,10,0,value61),Size=UDim2.new(1,-20,0,0),BackgroundTransparency=1,Parent=value59})
+        createInstance("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,4),Parent=value66})
         local entries9={Open=false}
         local entries10={}
         local entries11,text6={},""
-        local value68=configuration40.SearchAfter or 6
-        local value69=createInstance(text4,{Size=UDim2.new(1,0,0,dropdownOptionHeight),BackgroundColor3=nativeTheme2.Surface,BackgroundTransparency=1,BorderSizePixel=0,LayoutOrder=0,Visible=false,Parent=value67})
-        addCorner(value69,UDim.new(0,6))
-        local stroke5=addStroke(value69,nativeTheme2.Stroke,1)
-        local textBox2=createInstance("TextBox",{Position=UDim2.fromOffset(12,0),Size=UDim2.new(1,-20,1,0),BackgroundTransparency=1,Text="",PlaceholderText="Search",PlaceholderColor3=nativeTheme2.Muted,TextColor3=nativeTheme2.Text,TextSize=13,FontFace=nativeFonts.Regular,TextXAlignment=Enum.TextXAlignment.Left,ClearTextOnFocus=false,TextTransparency=1,Parent=value69})
-        local function callback16(configuration42)
-            return text6==""or string.find(string.lower(tostring(configuration42)),text6,1,true)~=nil
+        local value67=configuration39.SearchAfter or 6
+        local value68=createInstance(text4,{Size=UDim2.new(1,0,0,dropdownOptionHeight),BackgroundColor3=nativeTheme2.Surface,BackgroundTransparency=1,BorderSizePixel=0,LayoutOrder=0,Visible=false,Parent=value66})
+        addCorner(value68,UDim.new(0,6))
+        local stroke5=addStroke(value68,nativeTheme2.Stroke,1)
+        local textBox2=createInstance("TextBox",{Position=UDim2.fromOffset(12,0),Size=UDim2.new(1,-20,1,0),BackgroundTransparency=1,Text="",PlaceholderText="Search",PlaceholderColor3=nativeTheme2.Muted,TextColor3=nativeTheme2.Text,TextSize=13,FontFace=nativeFonts.Regular,TextXAlignment=Enum.TextXAlignment.Left,ClearTextOnFocus=false,TextTransparency=1,Parent=value68})
+        local function callback16(configuration41)
+            return text6==""or string.find(string.lower(tostring(configuration41)),text6,1,true)~=nil
         end
-        if value58 then
-            for index10,entry10 in ipairs(configuration40.Default or{})do
+        if value57 then
+            for index10,entry10 in ipairs(configuration39.Default or{})do
                 entries10[entry10]=true
             end
-        elseif configuration40.Default~=nil then
-            entries10[configuration40.Default]=true
+        elseif configuration39.Default~=nil then
+            entries10[configuration39.Default]=true
         end
         local function callback17()
-            if value58 then
+            if value57 then
                 local entries12={}
-                for index11,entry11 in ipairs(value59)do
+                for index11,entry11 in ipairs(value58)do
                     if entries10[entry11]then
                         table.insert(entries12,entry11)
                     end
                 end
                 return entries12
             end
-            for index12,entry12 in ipairs(value59)do
+            for index12,entry12 in ipairs(value58)do
                 if entries10[entry12]then
                     return entry12
                 end
@@ -1022,28 +1023,28 @@ local Airflow = (function()
             return nil
         end
         local function callback18()
-            local value70=callback17()
-            if value58 then
-                text5=#value70>0 and table.concat(value70,", ")or"None"
+            local value69=callback17()
+            if value57 then
+                text5=#value69>0 and table.concat(value69,", ")or"None"
             else
-                text5=value70~=nil and tostring(value70)or"None"
+                text5=value69~=nil and tostring(value69)or"None"
             end
             textLabel6.Text=callback14()
             for index13,entry13 in pairs(entries11)do
-                local value71=entries10[index13]==true
-                if entry13.On~=value71 then
-                    entry13.On=value71
-                    animate(entry13.Label,{TextColor3=value71 and nativeTheme2.Text or nativeTheme2.Muted},.15)
+                local value70=entries10[index13]==true
+                if entry13.On~=value70 then
+                    entry13.On=value70
+                    animate(entry13.Label,{TextColor3=value70 and nativeTheme2.Text or nativeTheme2.Muted},.15)
                     if entries9.Open then
-                        animate(entry13.Check,{ImageTransparency=value71 and 0 or 1},.15)
-                        animate(entry13.CheckScale,{Scale=value71 and 1 or.6},value71 and.3 or.15,value71 and Enum.EasingStyle.Back or Enum.EasingStyle.Quint)
+                        animate(entry13.Check,{ImageTransparency=value70 and 0 or 1},.15)
+                        animate(entry13.CheckScale,{Scale=value70 and 1 or.6},value70 and.3 or.15,value70 and Enum.EasingStyle.Back or Enum.EasingStyle.Quint)
                     end
                 end
             end
         end
         local function callback19()
             local count2=0
-            for index14,entry14 in ipairs(value59)do
+            for index14,entry14 in ipairs(value58)do
                 if callback16(entry14)then
                     count2+=1
                 end
@@ -1056,8 +1057,8 @@ local Airflow = (function()
             end
         end
         local function callback21()
-            local height=value62+8+(value69.Visible and dropdownOptionHeight+4 or 0)
-            for _,label in ipairs(value59)do
+            local height=value61+8+(value68.Visible and dropdownOptionHeight+4 or 0)
+            for _,label in ipairs(value58)do
                 if callback16(label)then
                     local row=entries11[label]
                     height+=(row and row.Frame.Size.Y.Offset or dropdownOptionHeight)+4
@@ -1065,58 +1066,58 @@ local Airflow = (function()
             end
             return height
         end
-        local function callback22(configuration43)
-            entries9.Open=configuration43
-            value69.Visible=#value59>value68
-            if not configuration43 then
+        local function callback22(configuration42)
+            entries9.Open=configuration42
+            value68.Visible=#value58>value67
+            if not configuration42 then
                 text6=""
                 textBox2.Text=""
                 callback20()
             end
-            animate(value60,{Size=UDim2.new(1,0,0,configuration43 and callback21()or value62)},.3,Enum.EasingStyle.Quint)
-            animate(value69,{BackgroundTransparency=configuration43 and 0 or 1},.2)
-            animate(stroke5,{Transparency=configuration43 and 0 or 1},.2)
-            animate(textBox2,{TextTransparency=configuration43 and 0 or 1},.2)
-            value64:Set(configuration43)
-            animate(stroke4,{Color=configuration43 and nativeTheme2.StrokeHover or nativeTheme2.Stroke},.2)
-            local function callback23(configuration44)
-                if not configuration44.Stroke then
-                    configuration44.Stroke=addStroke(configuration44.Frame,nativeTheme2.Stroke,1)
+            animate(value59,{Size=UDim2.new(1,0,0,configuration42 and callback21()or value61)},.3,Enum.EasingStyle.Quint)
+            animate(value68,{BackgroundTransparency=configuration42 and 0 or 1},.2)
+            animate(stroke5,{Transparency=configuration42 and 0 or 1},.2)
+            animate(textBox2,{TextTransparency=configuration42 and 0 or 1},.2)
+            value63:Set(configuration42)
+            animate(stroke4,{Color=configuration42 and nativeTheme2.StrokeHover or nativeTheme2.Stroke},.2)
+            local function callback23(configuration43)
+                if not configuration43.Stroke then
+                    configuration43.Stroke=addStroke(configuration43.Frame,nativeTheme2.Stroke,1)
                 end
-                local value72=configuration43 and configuration44.On
-                animate(configuration44.Check,{ImageTransparency=value72 and 0 or 1},.18)
-                configuration44.CheckScale.Scale=value72 and 1 or.6
-                animate(configuration44.Label,{TextTransparency=configuration43 and 0 or 1},.18)
-                animate(configuration44.Stroke,{Transparency=configuration43 and 0 or 1},.18)
-                animate(configuration44.Frame,{BackgroundTransparency=configuration43 and 0 or 1},.18)
+                local value71=configuration42 and configuration43.On
+                animate(configuration43.Check,{ImageTransparency=value71 and 0 or 1},.18)
+                configuration43.CheckScale.Scale=value71 and 1 or.6
+                animate(configuration43.Label,{TextTransparency=configuration42 and 0 or 1},.18)
+                animate(configuration43.Stroke,{Transparency=configuration42 and 0 or 1},.18)
+                animate(configuration43.Frame,{BackgroundTransparency=configuration42 and 0 or 1},.18)
             end
-            if configuration43 then
-                local value73=(entries9._openGeneration or 0)+1
-                entries9._openGeneration=value73
+            if configuration42 then
+                local value72=(entries9._openGeneration or 0)+1
+                entries9._openGeneration=value72
                 task.spawn(function()
                     local enabled7=true
-                    for index16,entry16 in ipairs(value59)do
-                        local value74=entries11[entry16]
-                        if value74 and value74.Frame.Visible then
+                    for index16,entry16 in ipairs(value58)do
+                        local value73=entries11[entry16]
+                        if value73 and value73.Frame.Visible then
                             if not enabled7 then
                                 task.wait(.025)
-                                if entries9._openGeneration~=value73 or not entries9.Open then
+                                if entries9._openGeneration~=value72 or not entries9.Open then
                                     return
                                 end
                             end
                             enabled7=false
-                            callback23(value74)
+                            callback23(value73)
                         end
                     end
                 end)
             else
-                local value75=(entries9._openGeneration or 0)+1
-                entries9._openGeneration=value75
+                local value74=(entries9._openGeneration or 0)+1
+                entries9._openGeneration=value74
                 local entries13={}
-                for index17,entry17 in ipairs(value59)do
-                    local value76=entries11[entry17]
-                    if value76 and value76.Frame.Visible then
-                        table.insert(entries13,value76)
+                for index17,entry17 in ipairs(value58)do
+                    local value75=entries11[entry17]
+                    if value75 and value75.Frame.Visible then
+                        table.insert(entries13,value75)
                     end
                 end
                 task.spawn(function()
@@ -1124,7 +1125,7 @@ local Airflow = (function()
                         callback23(entries13[index18])
                         if index18>1 then
                             task.wait(.015)
-                            if entries9._openGeneration~=value75 or entries9.Open then
+                            if entries9._openGeneration~=value74 or entries9.Open then
                                 return
                             end
                         end
@@ -1134,7 +1135,7 @@ local Airflow = (function()
         end
         local function callback24()
             local entries14={}
-            for index19,entry18 in ipairs(value59)do
+            for index19,entry18 in ipairs(value58)do
                 entries14[entry18]=index19
             end
             for index20,entry19 in pairs(entries11)do
@@ -1143,74 +1144,74 @@ local Airflow = (function()
                     entries11[index20]=nil
                 end
             end
-            for index21,entry20 in ipairs(value59)do
-                local value77=entries11[entry20]
-                if value77 then
-                    value77.Frame.LayoutOrder=index21
+            for index21,entry20 in ipairs(value58)do
+                local value76=entries11[entry20]
+                if value76 then
+                    value76.Frame.LayoutOrder=index21
                     continue
                 end
-                local textButton4=createInstance("TextButton",{Size=UDim2.new(1,0,0,dropdownOptionHeight),BackgroundColor3=nativeTheme2.Surface,BackgroundTransparency=1,Text="",AutoButtonColor=false,LayoutOrder=index21,Parent=value67})
+                local textButton4=createInstance("TextButton",{Size=UDim2.new(1,0,0,dropdownOptionHeight),BackgroundColor3=nativeTheme2.Surface,BackgroundTransparency=1,Text="",AutoButtonColor=false,LayoutOrder=index21,Parent=value66})
                 addCorner(textButton4,UDim.new(0,6))
                 local imageLabel6=createInstance("ImageLabel",{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-10,.5,0),Size=UDim2.fromOffset(14,14),BackgroundTransparency=1,ImageColor3=nativeTheme2.Accent,ImageTransparency=1,ScaleType=Enum.ScaleType.Fit,Parent=textButton4})
                 applyIcon(imageLabel6,"check")
-                local value78=createInstance("UIScale",{Scale=.6,Parent=imageLabel6})
+                local value77=createInstance("UIScale",{Scale=.6,Parent=imageLabel6})
                 local textLabel8=createLabel{Position=UDim2.fromOffset(12,-1),Size=UDim2.new(1,-36,1,0),Text=tostring(entry20),TextSize=13,TextColor3=nativeTheme2.Muted,TextTransparency=1,Parent=textButton4}
                 textButton4.MouseEnter:Connect(function()
                     animate(textLabel8,{TextColor3=nativeTheme2.Text},.15)
-                    local value79=entries11[entry20]
-                    if value79 and value79.Stroke then
-                        animate(value79.Stroke,{Color=nativeTheme2.StrokeHover},.12)
+                    local value78=entries11[entry20]
+                    if value78 and value78.Stroke then
+                        animate(value78.Stroke,{Color=nativeTheme2.StrokeHover},.12)
                     end
                 end)
                 textButton4.MouseLeave:Connect(function()
                     animate(textLabel8,{TextColor3=entries10[entry20]and nativeTheme2.Text or nativeTheme2.Muted},.2)
-                    local value80=entries11[entry20]
-                    if value80 and value80.Stroke then
-                        animate(value80.Stroke,{Color=nativeTheme2.Stroke},.2)
+                    local value79=entries11[entry20]
+                    if value79 and value79.Stroke then
+                        animate(value79.Stroke,{Color=nativeTheme2.Stroke},.2)
                     end
                 end)
                 textButton4.MouseButton1Click:Connect(function()
                     if entries10[entry20]then
                         entries10[entry20]=nil
                     else
-                        if not value58 then
+                        if not value57 then
                             entries10={}
                         end
                         entries10[entry20]=true
                     end
                     callback18()
-                    invokeCallback(configuration40.Callback,callback17())
-                    if not value58 and entries10[entry20]then
+                    invokeCallback(configuration39.Callback,callback17())
+                    if not value57 and entries10[entry20]then
                         callback22(false)
                     end
                 end)
-                entries11[entry20]={Frame=textButton4,Label=textLabel8,Check=imageLabel6,CheckScale=value78,Stroke=nil,On=nil}
+                entries11[entry20]={Frame=textButton4,Label=textLabel8,Check=imageLabel6,CheckScale=value77,Stroke=nil,On=nil}
             end
             callback20()
             if entries9.Open then
-                value60.Size=UDim2.new(1,0,0,callback21())
+                value59.Size=UDim2.new(1,0,0,callback21())
             end
         end
-        function entries9:Set(configuration45,argument33)
+        function entries9:Set(configuration44,argument33)
             entries10={}
-            if value58 then
-                for index22,entry21 in ipairs(type(configuration45)=="table"and configuration45 or{configuration45})do
+            if value57 then
+                for index22,entry21 in ipairs(type(configuration44)=="table"and configuration44 or{configuration44})do
                     entries10[entry21]=true
                 end
-            elseif configuration45~=nil then
-                entries10[configuration45]=true
+            elseif configuration44~=nil then
+                entries10[configuration44]=true
             end
             callback18()
-            addCardGradient(value61)
+            addCardGradient(value60)
             if not argument33 then
-                invokeCallback(configuration40.Callback,callback17())
+                invokeCallback(configuration39.Callback,callback17())
             end
         end
         function entries9:Get()
             return callback17()
         end
-        function entries9:Refresh(configuration46,argument34)
-            value59=configuration46 or{}
+        function entries9:Refresh(configuration45,argument34)
+            value58=configuration45 or{}
             if not argument34 then
                 entries10={}
             end
@@ -1220,8 +1221,8 @@ local Airflow = (function()
                 callback22(true)
             end
         end
-        function entries9:SetOpen(configuration47)
-            callback22(configuration47==true)
+        function entries9:SetOpen(configuration46)
+            callback22(configuration46==true)
         end
         textButton3.MouseButton1Click:Connect(function()
             callback22(not entries9.Open)
@@ -1230,7 +1231,7 @@ local Airflow = (function()
             text6=string.lower(textBox2.Text)
             callback20()
             if entries9.Open then
-                animate(value60,{Size=UDim2.new(1,0,0,callback21())},.2,Enum.EasingStyle.Quint)
+                animate(value59,{Size=UDim2.new(1,0,0,callback21())},.2,Enum.EasingStyle.Quint)
             end
         end)
         callback24()
@@ -1239,46 +1240,42 @@ local Airflow = (function()
         entries9.UIOptionRows=entries11
         entries9.UIReflow=function()
             if entries9.Open then
-                value60.Size=UDim2.new(1,0,0,callback21())
+                value59.Size=UDim2.new(1,0,0,callback21())
             end
         end
-        return registerElement(self,configuration40,entries9,value60,"Dropdown")
+        return registerElement(self,configuration39,entries9,value59,"Dropdown")
     end
-    function NativeTab:Input(configuration48)
-        local value81,value82,value83,value84,value85
-        configuration48,value81,value82,value83,value84,value85=offsetColor(self,configuration48,{Title="Name",Description="Desc",PlaceholderText="Placeholder",CurrentValue="Default",Value="Default"},"Frame",160,"Input")
-        local frame10=createInstance("Frame",{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-10,.5,0),Size=UDim2.fromOffset(170,30),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value81})
+    function NativeTab:Input(configuration47)
+        local value80,value81,value82,value83,value84
+        configuration47,value80,value81,value82,value83,value84=offsetColor(self,configuration47,{Title="Name",Description="Desc",PlaceholderText="Placeholder",CurrentValue="Default",Value="Default"},"Frame",160,"Input")
+        local frame10=createInstance("Frame",{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-10,.5,0),Size=UDim2.fromOffset(170,30),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value80})
         addCorner(frame10,UDim.new(0,6))
         local stroke6=addStroke(frame10)
-        local icon5=configuration48.Icon
+        local icon5=configuration47.Icon
         if icon5 then
             createIcon(frame10,icon5,nativeTheme2.Muted,UDim2.new(0,8,.5,0))
         end
-        local textBox3=createInstance("TextBox",{Position=UDim2.fromOffset(icon5 and 30 or 8,0),Size=UDim2.new(1,icon5 and-38 or-16,1,0),BackgroundTransparency=1,Text=configuration48.Default or"",PlaceholderText=configuration48.Placeholder or"",PlaceholderColor3=nativeTheme2.Muted,TextColor3=nativeTheme2.Text,TextSize=14,FontFace=nativeFonts.Regular,TextXAlignment=Enum.TextXAlignment.Left,ClearTextOnFocus=false,TextTruncate=Enum.TextTruncate.None,ClipsDescendants=true,Parent=frame10})
+        local textBox3=createInstance("TextBox",{Name="ValueInput",AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(.5,icon5 and 11 or 0,.5,0),Size=UDim2.new(1,icon5 and-38 or-16,1,0),TextYAlignment=Enum.TextYAlignment.Center,BackgroundTransparency=1,Text=configuration47.Default or"",PlaceholderText=configuration47.Placeholder or"",PlaceholderColor3=nativeTheme2.Muted,TextColor3=nativeTheme2.Text,TextSize=14,FontFace=nativeFonts.Regular,TextXAlignment=Enum.TextXAlignment.Center,ClearTextOnFocus=false,TextTruncate=Enum.TextTruncate.None,ClipsDescendants=true,Parent=frame10})
         frame10.ClipsDescendants=true
         local enabled8=false
-        local value86=(icon5 and 30 or 8)+8
-        local function callback25(configuration49)
-            if value81:GetAttribute("UIMultiline") then
+        local value85=(icon5 and 30 or 8)+8
+        local function callback25(configuration48)
+            if value80:GetAttribute("UIMultiline") then
                 return
             end
-            local value87=value81.AbsoluteSize.X/self.Window.Scale.Scale
-            local value88=math.clamp(value87-14-110-20,100,200)
+            local value86=value80.AbsoluteSize.X/self.Window.Scale.Scale
+            local value87=math.clamp(value86-14-110-20,100,200)
             local text7=textBox3.Text
             local x=textBox3.TextBounds.X
             if#text7==0 then
                 x=math.min(textBox3.TextBounds.X,90)
             end
-            local value89=math.clamp(x+value86+12,90,value88)+(enabled8 and 8 or 0)
-            value89=math.min(value89,value88+8)
-            blendColor(value84,value85,value89+20)
-            if configuration49 then
-                frame10.Size=UDim2.fromOffset(value89,30)
-            else
-                animate(frame10,{Size=UDim2.fromOffset(value89,30)},.18)
-            end
+            local value88=math.clamp(x+value85+12,90,value87)+(enabled8 and 8 or 0)
+            value88=math.min(value88,value87+8)
+            blendColor(value83,value84,value88+20)
+            frame10.Size=UDim2.fromOffset(value88,30)
         end
-        value81:GetPropertyChangedSignal"AbsoluteSize":Connect(function()
+        value80:GetPropertyChangedSignal"AbsoluteSize":Connect(function()
             callback25(true)
         end)
         textBox3:GetPropertyChangedSignal"Text":Connect(function()
@@ -1293,44 +1290,44 @@ local Airflow = (function()
             animate(stroke6,{Color=nativeTheme2.StrokeHover},.15)
             callback25(false)
         end)
-        textBox3.FocusLost:Connect(function(configuration50)
+        textBox3.FocusLost:Connect(function(configuration49)
             enabled8=false
             animate(stroke6,{Color=nativeTheme2.Stroke},.15)
             callback25(false)
-            if configuration48.Numeric then
-                local value90=tonumber(textBox3.Text)
-                if not value90 then
+            if configuration47.Numeric then
+                local value89=tonumber(textBox3.Text)
+                if not value89 then
                     textBox3.Text=""
                     return
                 end
             end
-            invokeCallback(configuration48.Callback,textBox3.Text,configuration50)
+            invokeCallback(configuration47.Callback,textBox3.Text,configuration49)
         end)
-        return registerElement(self,configuration48,{Set=function(configuration51,argument35)
+        return registerElement(self,configuration47,{Set=function(configuration50,argument35)
             textBox3.Text=tostring(argument35)
-            addCardGradient(value82)
+            addCardGradient(value81)
         end,Get=function()
             return textBox3.Text
-        end},value81,"Input")
+        end},value80,"Input")
     end
-    function NativeTab:Keybind(configuration52)
-        local value91,value92,value93,value94,value95
-        configuration52,value91,value92,value93,value94,value95=offsetColor(self,configuration52,{Title="Name",Description="Desc",CurrentKeybind="Default",Value="Default"},"Frame",110,"Keybind")
-        if type(configuration52.Default)=="string"then
-            configuration52.Default=Enum.KeyCode[configuration52.Default]
+    function NativeTab:Keybind(configuration51)
+        local value90,value91,value92,value93,value94
+        configuration51,value90,value91,value92,value93,value94=offsetColor(self,configuration51,{Title="Name",Description="Desc",CurrentKeybind="Default",Value="Default"},"Frame",110,"Keybind")
+        if type(configuration51.Default)=="string"then
+            configuration51.Default=Enum.KeyCode[configuration51.Default]
         end
-        local textButton5=createInstance("TextButton",{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-10,.5,0),Size=UDim2.fromOffset(44,chipHeight),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Text="",AutoButtonColor=false,ClipsDescendants=true,Parent=value91})
+        local textButton5=createInstance("TextButton",{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-10,.5,0),Size=UDim2.fromOffset(44,chipHeight),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Text="",AutoButtonColor=false,ClipsDescendants=true,Parent=value90})
         addCorner(textButton5,UDim.new(0,6))
         local stroke7=addStroke(textButton5)
         local textLabel9=createLabel{Size=UDim2.new(1,0,1,0),TextSize=13,TextColor3=nativeTheme2.Muted,TextXAlignment=Enum.TextXAlignment.Center,TextTruncate=Enum.TextTruncate.None,Parent=textButton5}
-        local entries15={Value=configuration52.Default,Listening=false}
-        local function callback26(configuration53)
-            local value96=math.max(textLabel9.TextBounds.X+20,isTouchDevice and 44 or 36)
-            blendColor(value94,value95,value96+20)
-            if configuration53 then
-                textButton5.Size=UDim2.fromOffset(value96,chipHeight)
+        local entries15={Value=configuration51.Default,Listening=false}
+        local function callback26(configuration52)
+            local value95=math.max(textLabel9.TextBounds.X+20,isTouchDevice and 44 or 36)
+            blendColor(value93,value94,value95+20)
+            if configuration52 then
+                textButton5.Size=UDim2.fromOffset(value95,chipHeight)
             else
-                animate(textButton5,{Size=UDim2.fromOffset(value96,chipHeight)},.2)
+                animate(textButton5,{Size=UDim2.fromOffset(value95,chipHeight)},.2)
             end
         end
         textLabel9:GetPropertyChangedSignal"TextBounds":Connect(function()
@@ -1341,39 +1338,39 @@ local Airflow = (function()
             animate(stroke7,{Color=entries15.Listening and nativeTheme2.StrokeHover or nativeTheme2.Stroke},.15)
             animate(textLabel9,{TextColor3=entries15.Listening and nativeTheme2.Accent or nativeTheme2.Muted},.15)
         end
-        function entries15:Set(configuration54,argument36)
+        function entries15:Set(configuration53,argument36)
             local listening=entries15.Listening
-            entries15.Value=configuration54
+            entries15.Value=configuration53
             entries15.Listening=false
             callback27()
             if not listening then
-                addCardGradient(value92)
+                addCardGradient(value91)
             end
             if not argument36 then
-                invokeCallback(configuration52.OnChanged,configuration54)
+                invokeCallback(configuration51.OnChanged,configuration53)
             end
         end
         textButton5.MouseButton1Click:Connect(function()
             entries15.Listening=not entries15.Listening
             callback27()
         end)
-        self.Window:_listen("Began",function(configuration55,argument37)
-            if configuration55.UserInputType~=Enum.UserInputType.Keyboard then
+        self.Window:_listen("Began",function(configuration54,argument37)
+            if configuration54.UserInputType~=Enum.UserInputType.Keyboard then
                 return
             end
             if entries15.Listening then
-                self.Window._consumedKey=configuration55.KeyCode
+                self.Window._consumedKey=configuration54.KeyCode
                 self.Window._consumedAt=os.clock()
-                if configuration55.KeyCode==Enum.KeyCode.Escape then
+                if configuration54.KeyCode==Enum.KeyCode.Escape then
                     entries15.Listening=false
                     callback27()
                 else
-                    entries15:Set(configuration55.KeyCode)
+                    entries15:Set(configuration54.KeyCode)
                 end
                 return
             end
-            if not argument37 and entries15.Value~=nil and configuration55.KeyCode==entries15.Value then
-                invokeCallback(configuration52.Callback,configuration55.KeyCode)
+            if not argument37 and entries15.Value~=nil and configuration54.KeyCode==entries15.Value then
+                invokeCallback(configuration51.Callback,configuration54.KeyCode)
             end
         end,entries15)
         callback27()
@@ -1381,130 +1378,130 @@ local Airflow = (function()
         function entries15:Get()
             return entries15.Value
         end
-        return registerElement(self,configuration52,entries15,value91,"Keybind")
+        return registerElement(self,configuration51,entries15,value90,"Keybind")
     end
-    function NativeTab:ColorPicker(configuration56)
+    function NativeTab:ColorPicker(configuration55)
         local text8,text9,text10,text11="Default","Frame","TextButton","UIGradient"
-        local value97,value98,value99
-        configuration56,value97,value98,value99=offsetColor(self,configuration56,{Title="Name",Description="Desc",Color=text8,CurrentValue=text8,Value=text8},text9)
-        value97.ClipsDescendants=true
-        local value100=createInstance(text10,{Size=UDim2.new(1,0,0,value99),BackgroundTransparency=1,Text="",AutoButtonColor=false,Parent=value97})
-        createCardLabels(value100,configuration56.Name or"Color",configuration56.Desc,90)
-        local value101=createInstance(text9,{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-34,.5,0),Size=UDim2.fromOffset(36,20),BorderSizePixel=0,Parent=value100})
-        addCorner(value101,UDim.new(0,6))
-        addStroke(value101,nativeTheme2.Stroke)
-        local value102=measureText(value100,1,-12)
-        local value103=createInstance(text9,{Position=UDim2.fromOffset(14,value99+2),Size=UDim2.new(1,-28,0,156),BackgroundTransparency=1,Visible=false,Parent=value97})
-        local value104=createInstance(text10,{Size=UDim2.new(1,-30,0,110),BackgroundColor3=Color3.new(1,1,1),BorderSizePixel=0,Text="",AutoButtonColor=false,ClipsDescendants=true,Parent=value103})
-        addCorner(value104,UDim.new(0,6))
-        local value105=createInstance(text11,{Color=ColorSequence.new(Color3.new(1,1,1),Color3.new(1,0,0)),Parent=value104})
-        local value106=createInstance(text9,{Size=UDim2.fromScale(1,1),BackgroundColor3=Color3.new(0,0,0),BorderSizePixel=0,Parent=value104})
-        createInstance(text11,{Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(1,0)},Rotation=90,Parent=value106})
-        local value107=createInstance(text9,{AnchorPoint=Vector2.new(.5,.5),Size=UDim2.fromOffset(10,10),BackgroundTransparency=1,ZIndex=3,Parent=value104})
-        addCorner(value107,UDim.new(1,0))
-        addStroke(value107,Color3.new(1,1,1),0,2)
-        local value108=createInstance(text10,{AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,0,0,0),Size=UDim2.fromOffset(14,110),BorderSizePixel=0,Text="",AutoButtonColor=false,Parent=value103})
-        addCorner(value108,UDim.new(0,6))
-        createInstance(text11,{Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(255,0,0)),ColorSequenceKeypoint.new(.16666666666666666,Color3.fromRGB(255,255,0)),ColorSequenceKeypoint.new(.3333333333333333,Color3.fromRGB(0,255,0)),ColorSequenceKeypoint.new(.5,Color3.fromRGB(0,255,255)),ColorSequenceKeypoint.new(.6666666666666666,Color3.fromRGB(0,0,255)),ColorSequenceKeypoint.new(.8333333333333334,Color3.fromRGB(255,0,255)),ColorSequenceKeypoint.new(1,Color3.fromRGB(255,0,0))},Rotation=90,Parent=value108})
-        local value109=createInstance(text9,{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(.5,0,0,0),Size=UDim2.fromOffset(18,5),BackgroundColor3=Color3.new(1,1,1),BorderSizePixel=0,ZIndex=3,Parent=value108})
-        addCorner(value109,UDim.new(1,0))
-        addStroke(value109,nativeTheme2.AccentDark,.4)
-        local value110=createInstance(text9,{Position=UDim2.fromOffset(6,122),Size=UDim2.fromOffset(118,28),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value103})
-        addCorner(value110,UDim.new(0,6))
-        local stroke8=addStroke(value110)
-        local textBox4=createInstance("TextBox",{Position=UDim2.fromOffset(14,0),Size=UDim2.new(1,-24,1,0),BackgroundTransparency=1,Text="",TextTruncate=Enum.TextTruncate.None,ClipsDescendants=false,TextColor3=nativeTheme2.Text,TextSize=13,FontFace=nativeFonts.Regular,TextXAlignment=Enum.TextXAlignment.Left,ClearTextOnFocus=false,Parent=value110})
-        local textLabel10=createLabel{Position=UDim2.fromOffset(134,122),Size=UDim2.new(1,-134,0,28),TextXAlignment=Enum.TextXAlignment.Right,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=value103}
+        local value96,value97,value98
+        configuration55,value96,value97,value98=offsetColor(self,configuration55,{Title="Name",Description="Desc",Color=text8,CurrentValue=text8,Value=text8},text9)
+        value96.ClipsDescendants=true
+        local value99=createInstance(text10,{Size=UDim2.new(1,0,0,value98),BackgroundTransparency=1,Text="",AutoButtonColor=false,Parent=value96})
+        createCardLabels(value99,configuration55.Name or"Color",configuration55.Desc,90)
+        local value100=createInstance(text9,{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-34,.5,0),Size=UDim2.fromOffset(36,20),BorderSizePixel=0,Parent=value99})
+        addCorner(value100,UDim.new(0,6))
+        addStroke(value100,nativeTheme2.Stroke)
+        local value101=measureText(value99,1,-12)
+        local value102=createInstance(text9,{Position=UDim2.fromOffset(14,value98+2),Size=UDim2.new(1,-28,0,156),BackgroundTransparency=1,Visible=false,Parent=value96})
+        local value103=createInstance(text10,{Size=UDim2.new(1,-30,0,110),BackgroundColor3=Color3.new(1,1,1),BorderSizePixel=0,Text="",AutoButtonColor=false,ClipsDescendants=true,Parent=value102})
+        addCorner(value103,UDim.new(0,6))
+        local value104=createInstance(text11,{Color=ColorSequence.new(Color3.new(1,1,1),Color3.new(1,0,0)),Parent=value103})
+        local value105=createInstance(text9,{Size=UDim2.fromScale(1,1),BackgroundColor3=Color3.new(0,0,0),BorderSizePixel=0,Parent=value103})
+        createInstance(text11,{Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(1,0)},Rotation=90,Parent=value105})
+        local value106=createInstance(text9,{AnchorPoint=Vector2.new(.5,.5),Size=UDim2.fromOffset(10,10),BackgroundTransparency=1,ZIndex=3,Parent=value103})
+        addCorner(value106,UDim.new(1,0))
+        addStroke(value106,Color3.new(1,1,1),0,2)
+        local value107=createInstance(text10,{AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,0,0,0),Size=UDim2.fromOffset(14,110),BorderSizePixel=0,Text="",AutoButtonColor=false,Parent=value102})
+        addCorner(value107,UDim.new(0,6))
+        createInstance(text11,{Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(255,0,0)),ColorSequenceKeypoint.new(.16666666666666666,Color3.fromRGB(255,255,0)),ColorSequenceKeypoint.new(.3333333333333333,Color3.fromRGB(0,255,0)),ColorSequenceKeypoint.new(.5,Color3.fromRGB(0,255,255)),ColorSequenceKeypoint.new(.6666666666666666,Color3.fromRGB(0,0,255)),ColorSequenceKeypoint.new(.8333333333333334,Color3.fromRGB(255,0,255)),ColorSequenceKeypoint.new(1,Color3.fromRGB(255,0,0))},Rotation=90,Parent=value107})
+        local value108=createInstance(text9,{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(.5,0,0,0),Size=UDim2.fromOffset(18,5),BackgroundColor3=Color3.new(1,1,1),BorderSizePixel=0,ZIndex=3,Parent=value107})
+        addCorner(value108,UDim.new(1,0))
+        addStroke(value108,nativeTheme2.AccentDark,.4)
+        local value109=createInstance(text9,{Position=UDim2.fromOffset(6,122),Size=UDim2.fromOffset(118,28),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value102})
+        addCorner(value109,UDim.new(0,6))
+        local stroke8=addStroke(value109)
+        local textBox4=createInstance("TextBox",{Position=UDim2.fromOffset(14,0),Size=UDim2.new(1,-24,1,0),BackgroundTransparency=1,Text="",TextTruncate=Enum.TextTruncate.None,ClipsDescendants=false,TextColor3=nativeTheme2.Text,TextSize=13,FontFace=nativeFonts.Regular,TextXAlignment=Enum.TextXAlignment.Left,ClearTextOnFocus=false,Parent=value109})
+        local textLabel10=createLabel{Position=UDim2.fromOffset(134,122),Size=UDim2.new(1,-134,0,28),TextXAlignment=Enum.TextXAlignment.Right,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=value102}
         local entries16={Open=false}
-        local value111,value112,value113=Color3.toHSV(configuration56.Default or nativeTheme2.Accent)
-        local value114
-        local function callback28(configuration57)
-            return string.format("#%02X%02X%02X",math.floor(configuration57.R*255+.5),math.floor(configuration57.G*255+.5),math.floor(configuration57.B*255+.5))
+        local value110,value111,value112=Color3.toHSV(configuration55.Default or nativeTheme2.Accent)
+        local value113
+        local function callback28(configuration56)
+            return string.format("#%02X%02X%02X",math.floor(configuration56.R*255+.5),math.floor(configuration56.G*255+.5),math.floor(configuration56.B*255+.5))
         end
-        local function callback29(configuration58)
-            local value115=Color3.fromHSV(value111,value112,value113)
-            entries16.Value=value115
-            value101.BackgroundColor3=value115
-            value105.Color=ColorSequence.new(Color3.new(1,1,1),Color3.fromHSV(value111,1,1))
-            animate(value107,{Position=UDim2.fromScale(value112,1-value113)},configuration58,Enum.EasingStyle.Linear)
-            animate(value109,{Position=UDim2.new(.5,0,value111,0)},configuration58,Enum.EasingStyle.Linear)
+        local function callback29(configuration57)
+            local value114=Color3.fromHSV(value110,value111,value112)
+            entries16.Value=value114
+            value100.BackgroundColor3=value114
+            value104.Color=ColorSequence.new(Color3.new(1,1,1),Color3.fromHSV(value110,1,1))
+            animate(value106,{Position=UDim2.fromScale(value111,1-value112)},configuration57,Enum.EasingStyle.Linear)
+            animate(value108,{Position=UDim2.new(.5,0,value110,0)},configuration57,Enum.EasingStyle.Linear)
             if not textBox4:IsFocused()then
-                textBox4.Text=callback28(value115)
+                textBox4.Text=callback28(value114)
             end
-            textLabel10.Text=string.format("RGB %d, %d, %d",math.floor(value115.R*255+.5),math.floor(value115.G*255+.5),math.floor(value115.B*255+.5))
+            textLabel10.Text=string.format("RGB %d, %d, %d",math.floor(value114.R*255+.5),math.floor(value114.G*255+.5),math.floor(value114.B*255+.5))
         end
-        local function callback30(configuration59,argument38)
-            callback29(configuration59)
+        local function callback30(configuration58,argument38)
+            callback29(configuration58)
             if not argument38 then
-                invokeCallback(configuration56.Callback,entries16.Value)
+                invokeCallback(configuration55.Callback,entries16.Value)
             end
         end
-        function entries16:Set(configuration60,argument39)
-            value111,value112,value113=Color3.toHSV(configuration60)
+        function entries16:Set(configuration59,argument39)
+            value110,value111,value112=Color3.toHSV(configuration59)
             callback30(.25,argument39)
-            addCardGradient(value98)
+            addCardGradient(value97)
         end
         function entries16:Get()
             return entries16.Value
         end
-        local function callback31(configuration61)
-            entries16.Open=configuration61
-            animate(value97,{Size=UDim2.new(1,0,0,configuration61 and value99+168 or value99)},.35,Enum.EasingStyle.Quint)
-            value102:Set(configuration61)
-            if configuration61 then
-                value103.Visible=true
+        local function callback31(configuration60)
+            entries16.Open=configuration60
+            animate(value96,{Size=UDim2.new(1,0,0,configuration60 and value98+168 or value98)},.35,Enum.EasingStyle.Quint)
+            value101:Set(configuration60)
+            if configuration60 then
+                value102.Visible=true
             else
                 task.delay(.35,function()
                     if not entries16.Open then
-                        value103.Visible=false
+                        value102.Visible=false
                     end
                 end)
             end
         end
-        function entries16:SetOpen(configuration62)
-            callback31(configuration62==true)
+        function entries16:SetOpen(configuration61)
+            callback31(configuration61==true)
         end
-        value100.MouseButton1Click:Connect(function()
+        value99.MouseButton1Click:Connect(function()
             callback31(not entries16.Open)
         end)
-        local function callback32(configuration63)
-            value112=math.clamp((configuration63.X-value104.AbsolutePosition.X)/value104.AbsoluteSize.X,0,1)
-            value113=1-math.clamp((configuration63.Y-value104.AbsolutePosition.Y)/value104.AbsoluteSize.Y,0,1)
+        local function callback32(configuration62)
+            value111=math.clamp((configuration62.X-value103.AbsolutePosition.X)/value103.AbsoluteSize.X,0,1)
+            value112=1-math.clamp((configuration62.Y-value103.AbsolutePosition.Y)/value103.AbsoluteSize.Y,0,1)
             callback30(.04)
         end
-        local function callback33(configuration64)
-            value111=math.clamp((configuration64.Y-value108.AbsolutePosition.Y)/value108.AbsoluteSize.Y,0,.999)
+        local function callback33(configuration63)
+            value110=math.clamp((configuration63.Y-value107.AbsolutePosition.Y)/value107.AbsoluteSize.Y,0,.999)
             callback30(.04)
         end
-        value104.InputBegan:Connect(function(configuration65)
-            if isPrimaryInput(configuration65)then
-                value114="sv"
-                animate(value107,{Size=UDim2.fromOffset(14,14)},.15,Enum.EasingStyle.Back)
+        value103.InputBegan:Connect(function(configuration64)
+            if isPrimaryInput(configuration64)then
+                value113="sv"
+                animate(value106,{Size=UDim2.fromOffset(14,14)},.15,Enum.EasingStyle.Back)
                 callback32(getPointerPosition())
             end
         end)
-        value108.InputBegan:Connect(function(configuration66)
-            if isPrimaryInput(configuration66)then
-                value114="hue"
-                animate(value109,{Size=UDim2.fromOffset(20,7)},.15,Enum.EasingStyle.Back)
+        value107.InputBegan:Connect(function(configuration65)
+            if isPrimaryInput(configuration65)then
+                value113="hue"
+                animate(value108,{Size=UDim2.fromOffset(20,7)},.15,Enum.EasingStyle.Back)
                 callback33(getPointerPosition())
             end
         end)
-        self.Window:_listen("Changed",function(configuration67)
-            if not value114 or not isPointerMovement(configuration67)then
+        self.Window:_listen("Changed",function(configuration66)
+            if not value113 or not isPointerMovement(configuration66)then
                 return
             end
             local pointerPosition2=getPointerPosition()
-            if value114=="sv"then
+            if value113=="sv"then
                 callback32(pointerPosition2)
             else
                 callback33(pointerPosition2)
             end
         end,entries16)
-        self.Window:_listen("Ended",function(configuration68)
-            if value114 and isPrimaryInput(configuration68)then
-                value114=nil
-                animate(value107,{Size=UDim2.fromOffset(10,10)},.2)
-                animate(value109,{Size=UDim2.fromOffset(18,5)},.2)
+        self.Window:_listen("Ended",function(configuration67)
+            if value113 and isPrimaryInput(configuration67)then
+                value113=nil
+                animate(value106,{Size=UDim2.fromOffset(10,10)},.2)
+                animate(value108,{Size=UDim2.fromOffset(18,5)},.2)
             end
         end,entries16)
         textBox4.Focused:Connect(function()
@@ -1512,30 +1509,30 @@ local Airflow = (function()
         end)
         textBox4.FocusLost:Connect(function()
             animate(stroke8,{Color=nativeTheme2.Stroke},.15)
-            local value116,value117,value118=textBox4.Text:match"^%s*#?(%x%x)(%x%x)(%x%x)%s*$"
-            if value116 then
-                entries16:Set(Color3.fromRGB(tonumber(value116,16),tonumber(value117,16),tonumber(value118,16)))
+            local value115,value116,value117=textBox4.Text:match"^%s*#?(%x%x)(%x%x)(%x%x)%s*$"
+            if value115 then
+                entries16:Set(Color3.fromRGB(tonumber(value115,16),tonumber(value116,16),tonumber(value117,16)))
             else
                 textBox4.Text=callback28(entries16.Value)
             end
         end)
         callback29(0)
-        return registerElement(self,configuration56,entries16,value97,"ColorPicker")
+        return registerElement(self,configuration55,entries16,value96,"ColorPicker")
     end
-    function NativeTab:Stepper(configuration69)
-        local value119,value120,value121,value122,value123
-        configuration69,value119,value120,value121,value122,value123=offsetColor(self,configuration69,{Title="Name",Description="Desc",CurrentValue="Default",Value="Default",Increment="Step"},"Frame",150,"Stepper")
-        local value124=configuration69.Min or 0
-        local value125=configuration69.Max or 100
-        local value126=configuration69.Step or 1
-        local value127=configuration69.Suffix or""
-        local value128=createRangeAdapter(value124,value125,value126)
-        local frame11=createInstance("Frame",{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-10,.5,0),Size=UDim2.fromOffset(0,chipHeight),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value119})
+    function NativeTab:Stepper(configuration68)
+        local value118,value119,value120,value121,value122
+        configuration68,value118,value119,value120,value121,value122=offsetColor(self,configuration68,{Title="Name",Description="Desc",CurrentValue="Default",Value="Default",Increment="Step"},"Frame",150,"Stepper")
+        local value123=configuration68.Min or 0
+        local value124=configuration68.Max or 100
+        local value125=configuration68.Step or 1
+        local value126=configuration68.Suffix or""
+        local value127=createRangeAdapter(value123,value124,value125)
+        local frame11=createInstance("Frame",{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-10,.5,0),Size=UDim2.fromOffset(0,chipHeight),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value118})
         addCorner(frame11,UDim.new(0,6))
         local stroke9=addStroke(frame11)
         createInstance("UIListLayout",{FillDirection=Enum.FillDirection.Horizontal,SortOrder=Enum.SortOrder.LayoutOrder,VerticalAlignment=Enum.VerticalAlignment.Center,Parent=frame11})
-        local function callback34(configuration70,argument40)
-            local textButton6=createInstance("TextButton",{Size=UDim2.fromOffset(chipHeight,chipHeight),BackgroundTransparency=1,Text=configuration70,TextColor3=nativeTheme2.Muted,TextSize=18,FontFace=nativeFonts.Medium,AutoButtonColor=false,LayoutOrder=argument40,Parent=frame11})
+        local function callback34(configuration69,argument40)
+            local textButton6=createInstance("TextButton",{Size=UDim2.fromOffset(chipHeight,chipHeight),BackgroundTransparency=1,Text=configuration69,TextColor3=nativeTheme2.Muted,TextSize=18,FontFace=nativeFonts.Medium,AutoButtonColor=false,LayoutOrder=argument40,Parent=frame11})
             textButton6.MouseEnter:Connect(function()
                 animate(textButton6,{TextColor3=nativeTheme2.Accent},.12)
             end)
@@ -1544,60 +1541,60 @@ local Airflow = (function()
             end)
             return textButton6
         end
-        local value129=callback34("−",1)
+        local value128=callback34("−",1)
         local textLabel11=createLabel{Size=UDim2.new(0,30,1,0),TextSize=13,TextColor3=nativeTheme2.Accent,TextXAlignment=Enum.TextXAlignment.Center,TextTruncate=Enum.TextTruncate.None,LayoutOrder=2,Parent=frame11}
-        local value130=callback34("+",3)
-        local function callback35(configuration71)
-            local value131=math.max(textLabel11.TextBounds.X+12,30)
-            if configuration71 then
-                textLabel11.Size=UDim2.new(0,value131,1,0)
+        local value129=callback34("+",3)
+        local function callback35(configuration70)
+            local value130=math.max(textLabel11.TextBounds.X+12,30)
+            if configuration70 then
+                textLabel11.Size=UDim2.new(0,value130,1,0)
             else
-                animate(textLabel11,{Size=UDim2.new(0,value131,1,0)},.2)
+                animate(textLabel11,{Size=UDim2.new(0,value130,1,0)},.2)
             end
         end
         textLabel11:GetPropertyChangedSignal"TextBounds":Connect(function()
             callback35(false)
         end)
         frame11:GetPropertyChangedSignal"AbsoluteSize":Connect(function()
-            blendColor(value122,value123,frame11.AbsoluteSize.X/self.Window.Scale.Scale+20)
+            blendColor(value121,value122,frame11.AbsoluteSize.X/self.Window.Scale.Scale+20)
         end)
-        local entries17={Value=math.clamp(configuration69.Default or value124,value124,value125)}
-        local snap2,enabled9=value128.snap,false
+        local entries17={Value=math.clamp(configuration68.Default or value123,value123,value124)}
+        local snap2,enabled9=value127.snap,false
         local function callback36()
-            textLabel11.Text=value128.format(entries17.Value)..value127
-            animate(value129,{TextTransparency=entries17.Value<=value124 and.6 or 0},.15)
-            animate(value130,{TextTransparency=entries17.Value>=value125 and.6 or 0},.15)
+            textLabel11.Text=value127.format(entries17.Value)..value126
+            animate(value128,{TextTransparency=entries17.Value<=value123 and.6 or 0},.15)
+            animate(value129,{TextTransparency=entries17.Value>=value124 and.6 or 0},.15)
         end
-        function entries17:Set(configuration72,argument41)
-            configuration72=snap2(tonumber(configuration72)or value124)
-            if configuration72==entries17.Value then
+        function entries17:Set(configuration71,argument41)
+            configuration71=snap2(tonumber(configuration71)or value123)
+            if configuration71==entries17.Value then
                 return
             end
-            entries17.Value=configuration72
+            entries17.Value=configuration71
             callback36()
             if not enabled9 then
-                addCardGradient(value120)
+                addCardGradient(value119)
             end
             if not argument41 then
-                invokeCallback(configuration69.Callback,configuration72)
+                invokeCallback(configuration68.Callback,configuration71)
             end
         end
         function entries17:Get()
             return entries17.Value
         end
-        local function callback37(configuration73)
+        local function callback37(configuration72)
             enabled9=true
-            entries17:Set(entries17.Value+configuration73*value126)
+            entries17:Set(entries17.Value+configuration72*value125)
             enabled9=false
             animate(stroke9,{Color=nativeTheme2.StrokeHover},.08)
             task.delay(.12,function()
                 animate(stroke9,{Color=nativeTheme2.Stroke},.2)
             end)
         end
-        local function callback38(configuration74,argument42)
+        local function callback38(configuration73,argument42)
             local enabled10=false
-            configuration74.InputBegan:Connect(function(configuration75)
-                if not isPrimaryInput(configuration75)then
+            configuration73.InputBegan:Connect(function(configuration74)
+                if not isPrimaryInput(configuration74)then
                     return
                 end
                 enabled10=true
@@ -1609,126 +1606,126 @@ local Airflow = (function()
                     end
                 end)
             end)
-            configuration74.InputEnded:Connect(function(configuration76)
-                if isPrimaryInput(configuration76)then
+            configuration73.InputEnded:Connect(function(configuration75)
+                if isPrimaryInput(configuration75)then
                     enabled10=false
                 end
             end)
-            configuration74.MouseLeave:Connect(function()
+            configuration73.MouseLeave:Connect(function()
                 enabled10=false
             end)
         end
-        callback38(value129,-1)
-        callback38(value130,1)
+        callback38(value128,-1)
+        callback38(value129,1)
         callback36()
         task.defer(callback35,true)
-        return registerElement(self,configuration69,entries17,value119,"Stepper")
+        return registerElement(self,configuration68,entries17,value118,"Stepper")
     end
-    function NativeTab:Progress(configuration77)
-        configuration77=normalizeOptions2(configuration77,{Title="Name",Description="Desc",CurrentValue="Default",Value="Default"})
-        local cardFrame4,cardStroke3=createCard(self,"Frame",configuration77.Desc and descriptionCardHeight+10 or cardHeight+10,configuration77)
+    function NativeTab:Progress(configuration76)
+        configuration76=normalizeOptions2(configuration76,{Title="Name",Description="Desc",CurrentValue="Default",Value="Default"})
+        local cardFrame4,cardStroke3=createCard(self,"Frame",configuration76.Desc and descriptionCardHeight+10 or cardHeight+10,configuration76)
         decorateCard(cardFrame4,cardStroke3)
-        local value132=configuration77.Desc and(descriptionCardHeight-38)/2-2 or 12
-        createLabel{Position=UDim2.fromOffset(14,value132),Size=UDim2.new(1,-110,0,18),Text=configuration77.Name or"Progress",Parent=cardFrame4}
-        if configuration77.Desc then
-            createLabel{Position=UDim2.fromOffset(14,value132+20),Size=UDim2.new(1,-110,0,17),Text=configuration77.Desc,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=cardFrame4}
+        local value131=configuration76.Desc and(descriptionCardHeight-38)/2-2 or 12
+        createLabel{Position=UDim2.fromOffset(14,value131),Size=UDim2.new(1,-110,0,18),Text=configuration76.Name or"Progress",Parent=cardFrame4}
+        if configuration76.Desc then
+            createLabel{Position=UDim2.fromOffset(14,value131+20),Size=UDim2.new(1,-110,0,17),Text=configuration76.Desc,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=cardFrame4}
         end
-        local textLabel12=createLabel{AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,-14,0,value132),Size=UDim2.fromOffset(90,18),TextXAlignment=Enum.TextXAlignment.Right,TextSize=13,TextColor3=nativeTheme2.Accent,Parent=cardFrame4}
+        local textLabel12=createLabel{AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,-14,0,value131),Size=UDim2.fromOffset(90,18),TextXAlignment=Enum.TextXAlignment.Right,TextSize=13,TextColor3=nativeTheme2.Accent,Parent=cardFrame4}
         local frame12=createInstance("Frame",{Position=UDim2.new(0,14,1,-16),Size=UDim2.new(1,-28,0,5),BackgroundColor3=nativeTheme2.Surface3,BorderSizePixel=0,Parent=cardFrame4})
         addCorner(frame12,UDim.new(1,0))
-        local frame13=createInstance("Frame",{Size=UDim2.new(0,0,1,0),BackgroundColor3=configuration77.Color or nativeTheme2.Accent,BorderSizePixel=0,Parent=frame12})
+        local frame13=createInstance("Frame",{Size=UDim2.new(0,0,1,0),BackgroundColor3=configuration76.Color or nativeTheme2.Accent,BorderSizePixel=0,Parent=frame12})
         addCorner(frame13,UDim.new(1,0))
-        local entries18={Value=math.clamp(configuration77.Default or 0,0,1)}
-        local format=configuration77.Format
-        local function callback39(configuration78)
-            local value133=entries18.Value
-            animate(frame13,{Size=UDim2.new(value133,0,1,0)},configuration78,Enum.EasingStyle.Quint)
+        local entries18={Value=math.clamp(configuration76.Default or 0,0,1)}
+        local format=configuration76.Format
+        local function callback39(configuration77)
+            local value132=entries18.Value
+            animate(frame13,{Size=UDim2.new(value132,0,1,0)},configuration77,Enum.EasingStyle.Quint)
             if type(format)=="function"then
-                textLabel12.Text=tostring(format(value133))
+                textLabel12.Text=tostring(format(value132))
             else
-                textLabel12.Text=string.format("%d%%",math.floor(value133*100+.5))
+                textLabel12.Text=string.format("%d%%",math.floor(value132*100+.5))
             end
         end
-        function entries18:Set(configuration79,argument43)
-            configuration79=math.clamp(tonumber(configuration79)or 0,0,1)
-            if configuration79==entries18.Value then
+        function entries18:Set(configuration78,argument43)
+            configuration78=math.clamp(tonumber(configuration78)or 0,0,1)
+            if configuration78==entries18.Value then
                 return
             end
-            entries18.Value=configuration79
+            entries18.Value=configuration78
             callback39(.35)
             if not argument43 then
-                invokeCallback(configuration77.Callback,configuration79)
+                invokeCallback(configuration76.Callback,configuration78)
             end
         end
         function entries18:Get()
             return entries18.Value
         end
-        function entries18:SetColor(configuration80)
-            frame13.BackgroundColor3=configuration80
+        function entries18:SetColor(configuration79)
+            frame13.BackgroundColor3=configuration79
         end
         callback39(0)
-        return registerElement(self,configuration77,entries18,cardFrame4,"Progress")
+        return registerElement(self,configuration76,entries18,cardFrame4,"Progress")
     end
-    function NativeTab:ConfigManager(configuration81)
-        configuration81=normalizeOptions2(configuration81,{})
+    function NativeTab:ConfigManager(configuration80)
+        configuration80=normalizeOptions2(configuration80,{})
         local window2=self.Window
         local entries19={}
-        self:Section(configuration81.Name or"Configs")
-        local value134=self:Input{Name="Config name",Placeholder=window2.ConfigName,Callback=function(configuration82,argument44)
-            if argument44 and#configuration82>0 then
-                entries19:Save(configuration82)
+        self:Section(configuration80.Name or"Configs")
+        local value133=self:Input{Name="Config name",Placeholder=window2.ConfigName,Callback=function(configuration81,argument44)
+            if argument44 and#configuration81>0 then
+                entries19:Save(configuration81)
             end
         end}
-        local value135=self:Dropdown{Name="Saved configs",Options=window2:ListConfigs(),Default=window2.ConfigName,Callback=function(configuration83)
-            if configuration83 then
-                value134:Set(configuration83)
+        local value134=self:Dropdown{Name="Saved configs",Options=window2:ListConfigs(),Default=window2.ConfigName,Callback=function(configuration82)
+            if configuration82 then
+                value133:Set(configuration82)
             end
         end}
         function entries19:Refresh()
-            value135:Refresh(window2:ListConfigs(),true)
+            value134:Refresh(window2:ListConfigs(),true)
         end
-        function entries19:Save(configuration84)
-            configuration84=configuration84 or value135:Get()or window2.ConfigName
-            local value136,value137=window2:SaveConfig(configuration84)
+        function entries19:Save(configuration83)
+            configuration83=configuration83 or value134:Get()or window2.ConfigName
+            local value135,value136=window2:SaveConfig(configuration83)
             entries19:Refresh()
-            value135:Set(configuration84,true)
-            window2:Notify{Title=value136 and"Config saved"or"Save failed",Content=value136 and configuration84 or tostring(value137),Type=value136 and"Success"or"Error",Duration=3}
+            value134:Set(configuration83,true)
+            window2:Notify{Title=value135 and"Config saved"or"Save failed",Content=value135 and configuration83 or tostring(value136),Type=value135 and"Success"or"Error",Duration=3}
         end
-        function entries19:Load(configuration85)
-            configuration85=configuration85 or value135:Get()
+        function entries19:Load(configuration84)
+            configuration84=configuration84 or value134:Get()
+            if not configuration84 then
+                return
+            end
+            local value137,value138=window2:LoadConfig(configuration84)
+            window2:Notify{Title=value137 and"Config loaded"or"Load failed",Content=value137 and configuration84 or tostring(value138),Type=value137 and"Success"or"Error",Duration=3}
+        end
+        function entries19:Delete(configuration85)
+            configuration85=configuration85 or value134:Get()
             if not configuration85 then
                 return
             end
-            local value138,value139=window2:LoadConfig(configuration85)
-            window2:Notify{Title=value138 and"Config loaded"or"Load failed",Content=value138 and configuration85 or tostring(value139),Type=value138 and"Success"or"Error",Duration=3}
-        end
-        function entries19:Delete(configuration86)
-            configuration86=configuration86 or value135:Get()
-            if not configuration86 then
-                return
-            end
-            local value140,value141=window2:DeleteConfig(configuration86)
+            local value139,value140=window2:DeleteConfig(configuration85)
             entries19:Refresh()
-            window2:Notify{Title=value140 and"Config deleted"or"Delete failed",Content=value140 and configuration86 or tostring(value141),Type=value140 and"Info"or"Error",Duration=3}
+            window2:Notify{Title=value139 and"Config deleted"or"Delete failed",Content=value139 and configuration85 or tostring(value140),Type=value139 and"Info"or"Error",Duration=3}
         end
         self:Button{Name="Save",Desc="Writes every flagged element to the selected name",Icon="save",Style="Primary",Callback=function()
-            local value142=value134:Get()
-            entries19:Save(#value142>0 and value142 or nil)
+            local value141=value133:Get()
+            entries19:Save(#value141>0 and value141 or nil)
         end}
         self:Button{Name="Load",Icon="folder-open",Callback=function()
             entries19:Load()
         end}
         self:Button{Name="Delete",Icon="trash-2",Callback=function()
-            local value143=value135:Get()
-            if not value143 then
+            local value142=value134:Get()
+            if not value142 then
                 return
             end
-            window2:Confirm{Title="Delete config",Content="Remove "..value143.."? This cannot be undone.",Icon="trash-2",ConfirmText="Delete",Callback=function()
-                entries19:Delete(value143)
+            window2:Confirm{Title="Delete config",Content="Remove "..value142.."? This cannot be undone.",Icon="trash-2",ConfirmText="Delete",Callback=function()
+                entries19:Delete(value142)
             end}
         end}
-        self:Toggle{Name="Auto save",Desc="Save whenever a flagged element changes",Default=window2._autoSaveEnabled,Callback=function(configuration87)
-            window2._autoSaveEnabled=configuration87
+        self:Toggle{Name="Auto save",Desc="Save whenever a flagged element changes",Default=window2._autoSaveEnabled,Callback=function(configuration86)
+            window2._autoSaveEnabled=configuration86
         end}
         return entries19
     end
@@ -1738,16 +1735,16 @@ local Airflow = (function()
         end
     end
     local function detectExecutor()
-        local value144
+        local value143
         pcall(function()
             if typeof(identifyexecutor)=="function"then
-                value144=(identifyexecutor())
+                value143=(identifyexecutor())
             elseif typeof(getexecutorname)=="function"then
-                value144=getexecutorname()
+                value143=getexecutorname()
             end
         end)
-        if type(value144)=="string"and#value144>0 then
-            return value144
+        if type(value143)=="string"and#value143>0 then
+            return value143
         end
         return RunService:IsStudio()and"Studio"or"Unknown"
     end
@@ -1763,93 +1760,93 @@ local Airflow = (function()
     local notificationColors={Success=nativeTheme2.Success,Warning=nativeTheme2.Warning,Error=nativeTheme2.Error}
     local NativeWindow={}
     NativeWindow.__index=NativeWindow
-    function NativeLibrary.Window(configuration88,argument45)
+    function NativeLibrary.Window(configuration87,argument45)
         local text12,text13,text14,text15,text16,text17="AirflowUI","Frame","CanvasGroup","UIListLayout","AbsoluteSize","table"
         argument45=normalizeOptions2(argument45,{Name="Title",LoadingSubtitle="Subtitle",ToggleUIKeybind="Keybind"})
         if type(argument45.Keybind)=="string"then
             argument45.Keybind=Enum.KeyCode[argument45.Keybind]
         end
-        local value145=argument45.Size or UDim2.fromOffset(640,480)
-        local value146=argument45.Keybind or Enum.KeyCode.RightControl
-        local value147=setmetatable({Tabs={},CurrentTab=nil,Open=true,Keybind=value146,_connections={},_controls={},_inputListeners={Began={},Changed={},Ended={},Render={}},_frameSteps={},_destroyed=false},NativeWindow)
-        local function callback40(configuration89)
+        local value144=argument45.Size or UDim2.fromOffset(640,480)
+        local value145=argument45.Keybind or Enum.KeyCode.RightControl
+        local value146=setmetatable({Tabs={},CurrentTab=nil,Open=true,Keybind=value145,_connections={},_controls={},_inputListeners={Began={},Changed={},Ended={},Render={}},_frameSteps={},_destroyed=false},NativeWindow)
+        local function callback40(configuration88)
             return function(...)
-                for index23,entry22 in ipairs(value147._inputListeners[configuration89])do
+                for index23,entry22 in ipairs(value146._inputListeners[configuration88])do
                     entry22(...)
                 end
             end
         end
-        local value148=callback40"Render"
-        table.insert(value147._connections,RunService.RenderStepped:Connect(function(configuration90)
-            value148(configuration90)
-            for index24,entry23 in ipairs(value147._frameSteps)do
-                entry23(configuration90)
+        local value147=callback40"Render"
+        table.insert(value146._connections,RunService.RenderStepped:Connect(function(configuration89)
+            value147(configuration89)
+            for index24,entry23 in ipairs(value146._frameSteps)do
+                entry23(configuration89)
             end
         end))
-        table.insert(value147._connections,UserInputService.InputBegan:Connect(callback40"Began"))
-        table.insert(value147._connections,UserInputService.InputChanged:Connect(callback40"Changed"))
-        table.insert(value147._connections,UserInputService.InputEnded:Connect(callback40"Ended"))
+        table.insert(value146._connections,UserInputService.InputBegan:Connect(callback40"Began"))
+        table.insert(value146._connections,UserInputService.InputChanged:Connect(callback40"Changed"))
+        table.insert(value146._connections,UserInputService.InputEnded:Connect(callback40"Ended"))
         local screenGui=createInstance("ScreenGui",{Name=argument45.Name or text12,IgnoreGuiInset=true,ResetOnSpawn=false,DisplayOrder=999,ZIndexBehavior=Enum.ZIndexBehavior.Sibling})
-        value147.Gui=screenGui
-        local value149=createInstance(text13,{Name="Window",AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=value145,BackgroundTransparency=1,Parent=screenGui})
-        value147.Root=value149
-        local value150=createInstance("UIScale",{Parent=value149})
-        value147.Scale=value150
-        local imageLabel7=createInstance("ImageLabel",{Position=UDim2.fromOffset(-25,-25),Size=UDim2.new(1,50,1,50),BackgroundTransparency=1,Image=nativeAssets.Shadow,ImageColor3=Color3.new(0,0,0),ImageTransparency=.6,ScaleType=Enum.ScaleType.Slice,SliceCenter=Rect.new(49,49,450,450),Parent=value149})
-        value147.Shadow=imageLabel7
-        local value151=createInstance(text14,{Name="Body",Size=UDim2.fromScale(1,1),BackgroundColor3=nativeTheme2.Background,BorderSizePixel=0,Parent=value149})
-        value147.Body=value151
-        addCorner(value151,UDim.new(0,16))
-        value147.BodyStroke=addStroke(value151,nativeTheme2.Stroke)
-        addEdgeHighlight(value151)
-        addGlow(value151,UDim2.fromOffset(500,180),UDim2.new(.5,0,1,8),.86,270)
-        addGlow(value151,UDim2.fromOffset(130,60),UDim2.new(0,-10,1,-10),.75,90)
-        addGlow(value151,UDim2.fromOffset(520,240),UDim2.new(1,-14,0,10),.92,90)
-        local value152=createInstance(text13,{Name="Sidebar",Size=UDim2.new(0,170,1,0),BackgroundTransparency=1,Parent=value151})
-        createInstance(text13,{Position=UDim2.new(0,170,0,28),Size=UDim2.new(0,1,1,-56),BackgroundColor3=nativeTheme2.Stroke,BorderSizePixel=0,Parent=value151})
-        local value153=createInstance(text13,{Name="Header",Size=UDim2.new(1,0,0,72),BackgroundTransparency=1,Parent=value152})
-        local imageLabel8=createInstance("ImageLabel",{Position=UDim2.fromOffset(22,27),Size=UDim2.fromOffset(30,28),BackgroundTransparency=1,Image="",ImageColor3=nativeTheme2.Accent,ScaleType=Enum.ScaleType.Fit,Parent=value153})
+        value146.Gui=screenGui
+        local value148=createInstance(text13,{Name="Window",AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=value144,BackgroundTransparency=1,Parent=screenGui})
+        value146.Root=value148
+        local value149=createInstance("UIScale",{Parent=value148})
+        value146.Scale=value149
+        local imageLabel7=createInstance("ImageLabel",{Position=UDim2.fromOffset(-25,-25),Size=UDim2.new(1,50,1,50),BackgroundTransparency=1,Image=nativeAssets.Shadow,ImageColor3=Color3.new(0,0,0),ImageTransparency=.6,ScaleType=Enum.ScaleType.Slice,SliceCenter=Rect.new(49,49,450,450),Parent=value148})
+        value146.Shadow=imageLabel7
+        local value150=createInstance(text14,{Name="Body",Size=UDim2.fromScale(1,1),BackgroundColor3=nativeTheme2.Background,BorderSizePixel=0,Parent=value148})
+        value146.Body=value150
+        addCorner(value150,UDim.new(0,16))
+        value146.BodyStroke=addStroke(value150,nativeTheme2.Stroke)
+        addEdgeHighlight(value150)
+        addGlow(value150,UDim2.fromOffset(500,180),UDim2.new(.5,0,1,8),.86,270)
+        addGlow(value150,UDim2.fromOffset(130,60),UDim2.new(0,-10,1,-10),.75,90)
+        addGlow(value150,UDim2.fromOffset(520,240),UDim2.new(1,-14,0,10),.92,90)
+        local value151=createInstance(text13,{Name="Sidebar",Size=UDim2.new(0,170,1,0),BackgroundTransparency=1,Parent=value150})
+        createInstance(text13,{Position=UDim2.new(0,170,0,28),Size=UDim2.new(0,1,1,-56),BackgroundColor3=nativeTheme2.Stroke,BorderSizePixel=0,Parent=value150})
+        local value152=createInstance(text13,{Name="Header",Size=UDim2.new(1,0,0,72),BackgroundTransparency=1,Parent=value151})
+        local imageLabel8=createInstance("ImageLabel",{Position=UDim2.fromOffset(22,27),Size=UDim2.fromOffset(30,28),BackgroundTransparency=1,Image="",ImageColor3=nativeTheme2.Accent,ScaleType=Enum.ScaleType.Fit,Parent=value152})
         applyIcon(imageLabel8,argument45.Icon or nativeAssets.Logo)
-        createLabel{Position=UDim2.fromOffset(60,25),Size=UDim2.new(1,-70,0,20),Text=argument45.Title or"Airflow",TextSize=20,Parent=value153}
-        createLabel{Position=UDim2.fromOffset(60,45),Size=UDim2.new(1,-70,0,14),Text=argument45.Subtitle or"",TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=value153}
-        local scrollingFrame=createInstance("ScrollingFrame",{Name="Tabs",Position=UDim2.fromOffset(0,80),Size=UDim2.new(1,0,1,-116),BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=0,AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),Parent=value152})
-        value147.TabList=scrollingFrame
+        createLabel{Position=UDim2.fromOffset(60,25),Size=UDim2.new(1,-70,0,20),Text=argument45.Title or"Airflow",TextSize=20,Parent=value152}
+        createLabel{Position=UDim2.fromOffset(60,45),Size=UDim2.new(1,-70,0,14),Text=argument45.Subtitle or"",TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=value152}
+        local scrollingFrame=createInstance("ScrollingFrame",{Name="Tabs",Position=UDim2.fromOffset(0,80),Size=UDim2.new(1,0,1,-116),BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=0,AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),Parent=value151})
+        value146.TabList=scrollingFrame
         addPadding(scrollingFrame,16,16,4,4)
         createInstance(text15,{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,4),Parent=scrollingFrame})
-        local value154=createInstance(text13,{AnchorPoint=Vector2.new(0,.5),Position=UDim2.fromOffset(6,0),Size=UDim2.fromOffset(3,18),BackgroundColor3=nativeTheme2.Accent,BorderSizePixel=0,Visible=false,ZIndex=2,Parent=value152})
-        addCorner(value154,UDim.new(1,0))
-        value147.Indicator=value154
+        local value153=createInstance(text13,{AnchorPoint=Vector2.new(0,.5),Position=UDim2.fromOffset(6,0),Size=UDim2.fromOffset(3,18),BackgroundColor3=nativeTheme2.Accent,BorderSizePixel=0,Visible=false,ZIndex=2,Parent=value151})
+        addCorner(value153,UDim.new(1,0))
+        value146.Indicator=value153
         local y=scrollingFrame.CanvasPosition.Y
-        table.insert(value147._frameSteps,function()
+        table.insert(value146._frameSteps,function()
             local y2=scrollingFrame.CanvasPosition.Y
-            if y2==y or not value147.CurrentTab or not value147._introDone then
+            if y2==y or not value146.CurrentTab or not value146._introDone then
                 return
             end
             y=y2
-            local value155=value147:_indicatorY(value147.CurrentTab)
+            local value154=value146:_indicatorY(value146.CurrentTab)
             local offset2=scrollingFrame.Position.Y.Offset
-            local value156=offset2+scrollingFrame.AbsoluteSize.Y/value147.Scale.Scale
-            value154.Visible=value155>offset2 and value155<value156
-            value154.Position=UDim2.fromOffset(6,value155)
+            local value155=offset2+scrollingFrame.AbsoluteSize.Y/value146.Scale.Scale
+            value153.Visible=value154>offset2 and value154<value155
+            value153.Position=UDim2.fromOffset(6,value154)
         end)
-        local value157=createInstance(text13,{Name="KeybindFooter",Position=UDim2.new(0,22,1,-36),Size=UDim2.new(1,-44,0,22),BackgroundTransparency=1,Parent=value152})
-        local value158=createInstance(text13,{Size=UDim2.fromOffset(0,22),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value157})
-        addCorner(value158,UDim.new(0,5))
-        addStroke(value158)
-        addPadding(value158,7,7)
-        local textLabel13=createLabel{Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,Text=formatKeyName(value146),TextSize=11,TextColor3=nativeTheme2.Muted,TextTruncate=Enum.TextTruncate.None,Parent=value158}
-        value147._keyChipLabel=textLabel13
-        local textLabel14=createLabel{Size=UDim2.new(1,0,1,0),Text="Abrir / minimizar",TextSize=12,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=value157}
+        local value156=createInstance(text13,{Name="KeybindFooter",Position=UDim2.new(0,22,1,-36),Size=UDim2.new(1,-44,0,22),BackgroundTransparency=1,Parent=value151})
+        local value157=createInstance(text13,{Size=UDim2.fromOffset(0,22),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value156})
+        addCorner(value157,UDim.new(0,5))
+        addStroke(value157)
+        addPadding(value157,7,7)
+        local textLabel13=createLabel{Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,Text=formatKeyName(value145),TextSize=11,TextColor3=nativeTheme2.Muted,TextTruncate=Enum.TextTruncate.None,Parent=value157}
+        value146._keyChipLabel=textLabel13
+        local textLabel14=createLabel{Size=UDim2.new(1,0,1,0),Text="Abrir / minimizar",TextSize=12,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=value156}
         local function callback41()
-            textLabel14.Position=UDim2.fromOffset(value158.AbsoluteSize.X/value147.Scale.Scale+8,0)
+            textLabel14.Position=UDim2.fromOffset(value157.AbsoluteSize.X/value146.Scale.Scale+8,0)
         end
-        value158:GetPropertyChangedSignal(text16):Connect(callback41)
+        value157:GetPropertyChangedSignal(text16):Connect(callback41)
         task.defer(callback41)
-        local value159=createInstance(text13,{Name="Content",Position=UDim2.fromOffset(171,0),Size=UDim2.new(1,-171,1,0),BackgroundTransparency=1,ClipsDescendants=true,Parent=value151})
-        value147.Content=value159
-        value147._outLayer=createInstance(text14,{Name="TransitionOut",Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false,ZIndex=2,Parent=value159})
-        value147._inLayer=createInstance(text14,{Name="TransitionIn",Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false,ZIndex=3,Parent=value159})
-        local textButton7=createInstance("TextButton",{AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,-14,0,14),Size=UDim2.fromOffset(34,34),BackgroundColor3=nativeTheme2.Surface2,BackgroundTransparency=1,Text="×",TextColor3=nativeTheme2.Muted,TextSize=28,FontFace=nativeFonts.Bold,AutoButtonColor=false,ZIndex=5,Parent=value159})
+        local value158=createInstance(text13,{Name="Content",Position=UDim2.fromOffset(171,0),Size=UDim2.new(1,-171,1,0),BackgroundTransparency=1,ClipsDescendants=true,Parent=value150})
+        value146.Content=value158
+        value146._outLayer=createInstance(text14,{Name="TransitionOut",Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false,ZIndex=2,Parent=value158})
+        value146._inLayer=createInstance(text14,{Name="TransitionIn",Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false,ZIndex=3,Parent=value158})
+        local textButton7=createInstance("TextButton",{AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,-14,0,14),Size=UDim2.fromOffset(34,34),BackgroundColor3=nativeTheme2.Surface2,BackgroundTransparency=1,Text="×",TextColor3=nativeTheme2.Muted,TextSize=28,FontFace=nativeFonts.Bold,AutoButtonColor=false,ZIndex=5,Parent=value158})
         addPadding(textButton7,0,0,1,0)
         addCorner(textButton7,UDim.new(0,8))
         textButton7.MouseEnter:Connect(function()
@@ -1858,53 +1855,53 @@ local Airflow = (function()
         textButton7.MouseLeave:Connect(function()
             animate(textButton7,{BackgroundTransparency=1,TextColor3=nativeTheme2.Muted},.2)
         end)
-        value147.CloseButton=textButton7
+        value146.CloseButton=textButton7
         textButton7.MouseButton1Click:Connect(function()
-            if value147.RequestClose then
-                value147:RequestClose()
+            if value146.RequestClose then
+                value146:RequestClose()
             end
         end)
-        local value160=createInstance(text13,{Name="Notifications",AnchorPoint=Vector2.new(1,1),Position=UDim2.new(1,-20,1,-20),Size=UDim2.new(0,280,1,-40),BackgroundTransparency=1,Parent=screenGui})
+        local value159=createInstance(text13,{Name="Notifications",AnchorPoint=Vector2.new(1,1),Position=UDim2.new(1,-20,1,-20),Size=UDim2.new(0,280,1,-40),BackgroundTransparency=1,Parent=screenGui})
         local function callback42()
-            value160.Size=UDim2.new(0,math.min(280,screenGui.AbsoluteSize.X-40),1,-40)
+            value159.Size=UDim2.new(0,math.min(280,screenGui.AbsoluteSize.X-40),1,-40)
         end
-        table.insert(value147._connections,screenGui:GetPropertyChangedSignal(text16):Connect(callback42))
-        createInstance(text15,{SortOrder=Enum.SortOrder.LayoutOrder,VerticalAlignment=Enum.VerticalAlignment.Bottom,Padding=UDim.new(0,4),Parent=value160})
-        value147.NotifyHolder=value160
-        value147._notifyOrder=0
-        value147._toasts={}
-        value147.MaxNotifications=argument45.MaxNotifications or 4
-        value147._controlsDirty=true
-        table.insert(value147._connections,value151.DescendantAdded:Connect(function()
-            value147._controlsDirty=true
+        table.insert(value146._connections,screenGui:GetPropertyChangedSignal(text16):Connect(callback42))
+        createInstance(text15,{SortOrder=Enum.SortOrder.LayoutOrder,VerticalAlignment=Enum.VerticalAlignment.Bottom,Padding=UDim.new(0,4),Parent=value159})
+        value146.NotifyHolder=value159
+        value146._notifyOrder=0
+        value146._toasts={}
+        value146.MaxNotifications=argument45.MaxNotifications or 4
+        value146._controlsDirty=true
+        table.insert(value146._connections,value150.DescendantAdded:Connect(function()
+            value146._controlsDirty=true
         end))
-        table.insert(value147._connections,value151.DescendantRemoving:Connect(function()
-            value147._controlsDirty=true
+        table.insert(value146._connections,value150.DescendantRemoving:Connect(function()
+            value146._controlsDirty=true
         end))
-        value147:_enableDrag()
-        value147.MaxSize=argument45.MaxSize
-        value147.KeepOnScreen=argument45.KeepOnScreen~=false
-        value147:_enableResize(argument45.MinSize or Vector2.new(480,360))
+        value146:_enableDrag()
+        value146.MaxSize=argument45.MaxSize
+        value146.KeepOnScreen=argument45.KeepOnScreen~=false
+        value146:_enableResize(argument45.MinSize or Vector2.new(480,360))
         local configurationSaving=argument45.ConfigurationSaving
         if type(configurationSaving)==text17 and configurationSaving.Enabled~=false then
-            value147.ConfigFolder=configurationSaving.FolderName or text12
-            value147.ConfigName=configurationSaving.FileName or"default"
-            value147._autoSaveEnabled=true
+            value146.ConfigFolder=configurationSaving.FolderName or text12
+            value146.ConfigName=configurationSaving.FileName or"default"
+            value146._autoSaveEnabled=true
         else
-            value147.ConfigFolder=text12
-            value147.ConfigName="default"
-            value147._autoSaveEnabled=false
+            value146.ConfigFolder=text12
+            value146.ConfigName="default"
+            value146._autoSaveEnabled=false
         end
-        table.insert(value147._connections,UserInputService.InputBegan:Connect(function(configuration91,argument46)
+        table.insert(value146._connections,UserInputService.InputBegan:Connect(function(configuration90,argument46)
             if argument46 then
                 return
             end
-            if configuration91.UserInputType==Enum.UserInputType.Keyboard and configuration91.KeyCode==value147.Keybind then
+            if configuration90.UserInputType==Enum.UserInputType.Keyboard and configuration90.KeyCode==value146.Keybind then
                 task.defer(function()
-                    local value161=value147._consumedKey==configuration91.KeyCode and os.clock()-(value147._consumedAt or 0)<.2
-                    value147._consumedKey=nil
-                    if not value161 and not value147._destroyed then
-                        value147:Toggle(not value147.Open)
+                    local value160=value146._consumedKey==configuration90.KeyCode and os.clock()-(value146._consumedAt or 0)<.2
+                    value146._consumedKey=nil
+                    if not value160 and not value146._destroyed then
+                        value146:Toggle(not value146.Open)
                     end
                 end)
             end
@@ -1915,23 +1912,23 @@ local Airflow = (function()
             end
         end)
         screenGui.Parent=argument45.Parent or getInterfaceParent()
-        value150.Scale=.9
-        value151.GroupTransparency=1
+        value149.Scale=.9
+        value150.GroupTransparency=1
         imageLabel7.ImageTransparency=1
-        value147.BodyStroke.Transparency=1
-        value149.Visible=false
-        value147:_fitToScreen(true)
-        table.insert(value147._connections,screenGui:GetPropertyChangedSignal(text16):Connect(function()
-            value147:_fitToScreen()
-            value147:_clampToScreen()
+        value146.BodyStroke.Transparency=1
+        value148.Visible=false
+        value146:_fitToScreen(true)
+        table.insert(value146._connections,screenGui:GetPropertyChangedSignal(text16):Connect(function()
+            value146:_fitToScreen()
+            value146:_clampToScreen()
         end))
         if argument45.OpenButton~=nil and argument45.OpenButton~=false or argument45.OpenButton==nil and isTouchDevice then
-            value147:_createOpenButton(type(argument45.OpenButton)==text17 and argument45.OpenButton or{})
+            value146:_createOpenButton(type(argument45.OpenButton)==text17 and argument45.OpenButton or{})
         end
-        value147._introDone=false
-        table.insert(NativeLibrary.Windows,value147)
+        value146._introDone=false
+        table.insert(NativeLibrary.Windows,value146)
         if argument45.Home then
-            value147:_buildHome(type(argument45.Home)==text17 and argument45.Home or{})
+            value146:_buildHome(type(argument45.Home)==text17 and argument45.Home or{})
         end
         local loading=argument45.Loading
         if type(loading)==text17 then
@@ -1943,47 +1940,47 @@ local Airflow = (function()
         end
         if loading==false then
             task.defer(function()
-                value147:_playIntro()
+                value146:_playIntro()
             end)
         else
-            value147:_showLoader(argument45)
+            value146:_showLoader(argument45)
         end
-        return value147
+        return value146
     end
     NativeLibrary.CreateWindow=NativeLibrary.Window
-    function NativeLibrary:Notify(configuration92)
+    function NativeLibrary:Notify(configuration91)
+        local value161=NativeLibrary.Windows[#NativeLibrary.Windows]
+        if value161 then
+            return value161:Notify(configuration91)
+        end
+    end
+    function NativeLibrary:Confirm(configuration92)
         local value162=NativeLibrary.Windows[#NativeLibrary.Windows]
         if value162 then
-            return value162:Notify(configuration92)
+            return value162:Confirm(configuration92)
         end
     end
-    function NativeLibrary:Confirm(configuration93)
+    function NativeLibrary:Dialog(configuration93)
         local value163=NativeLibrary.Windows[#NativeLibrary.Windows]
         if value163 then
-            return value163:Confirm(configuration93)
-        end
-    end
-    function NativeLibrary:Dialog(configuration94)
-        local value164=NativeLibrary.Windows[#NativeLibrary.Windows]
-        if value164 then
-            return value164:Dialog(configuration94)
+            return value163:Dialog(configuration93)
         end
     end
     local function containsPoint(point,object3)
         local absolutePosition,absoluteSize=object3.AbsolutePosition,object3.AbsoluteSize
         return point.X>=absolutePosition.X and point.X<=absolutePosition.X+absoluteSize.X and point.Y>=absolutePosition.Y and point.Y<=absolutePosition.Y+absoluteSize.Y
     end
-    local function isControlVisible(configuration95,argument47,argument48)
-        local value165=configuration95
-        while value165 and value165~=argument47 and value165:IsA"GuiObject"do
-            if not value165.Visible then
+    local function isControlVisible(configuration94,argument47,argument48)
+        local value164=configuration94
+        while value164 and value164~=argument47 and value164:IsA"GuiObject"do
+            if not value164.Visible then
                 return false
             end
-            local parent6=value165.Parent
+            local parent6=value164.Parent
             if parent6 and parent6~=argument47 and parent6:IsA"GuiObject"and(parent6.ClipsDescendants or parent6:IsA"ScrollingFrame")and not containsPoint(argument48,parent6)then
                 return false
             end
-            value165=parent6
+            value164=parent6
         end
         return true
     end
@@ -1997,7 +1994,7 @@ local Airflow = (function()
         self._controls=entries20
         self._controlsDirty=false
     end
-    function NativeWindow:_overControl(configuration96)
+    function NativeWindow:_overControl(configuration95)
         if self._dialog then
             return true
         end
@@ -2005,7 +2002,7 @@ local Airflow = (function()
             self:_refreshControls()
         end
         for index26,entry25 in ipairs(self._controls)do
-            if entry25.Parent and containsPoint(configuration96,entry25)and isControlVisible(entry25,self.Body,configuration96)then
+            if entry25.Parent and containsPoint(configuration95,entry25)and isControlVisible(entry25,self.Body,configuration95)then
                 return true
             end
         end
@@ -2014,13 +2011,13 @@ local Airflow = (function()
     function NativeWindow:_enableDrag()
         local enabled11=false
         local zero=Vector2.zero
-        local value166
+        local value165
         local function callback43()
             local root=self.Root
             return root.AbsolutePosition+root.AbsoluteSize*root.AnchorPoint-self.Gui.AbsolutePosition
         end
-        table.insert(self._connections,UserInputService.InputBegan:Connect(function(configuration97)
-            if not isPrimaryInput(configuration97)then
+        table.insert(self._connections,UserInputService.InputBegan:Connect(function(configuration96)
+            if not isPrimaryInput(configuration96)then
                 return
             end
             if not self.Open or not self.Root.Visible then
@@ -2033,57 +2030,57 @@ local Airflow = (function()
             enabled11=true
             zero=pointerPosition3-callback43()
         end))
-        table.insert(self._connections,UserInputService.InputEnded:Connect(function(configuration98)
+        table.insert(self._connections,UserInputService.InputEnded:Connect(function(configuration97)
             if not enabled11 then
                 return
             end
-            if isPrimaryInput(configuration98)then
-                enabled11,value166=false,nil
+            if isPrimaryInput(configuration97)then
+                enabled11,value165=false,nil
                 self:_clampToScreen()
             end
         end))
-        table.insert(self._frameSteps,function(configuration99)
+        table.insert(self._frameSteps,function(configuration98)
             if not enabled11 then
                 return
             end
-            value166=getPointerPosition()-zero
-            local value167=callback43()
-            local value168=1-math.exp(-configuration99*45)
-            local value169=value167:Lerp(value166,value168)
-            self.Root.Position=UDim2.fromOffset(value169.X,value169.Y)
+            value165=getPointerPosition()-zero
+            local value166=callback43()
+            local value167=1-math.exp(-configuration98*45)
+            local value168=value166:Lerp(value165,value167)
+            self.Root.Position=UDim2.fromOffset(value168.X,value168.Y)
         end)
     end
-    local function revealElement(configuration100,argument49,argument50)
-        if not configuration100.Visible and not argument50 then
+    local function revealElement(configuration99,argument49,argument50)
+        if not configuration99.Visible and not argument50 then
             return
         end
-        configuration100.Visible=false
+        configuration99.Visible=false
         task.delay(argument49,function()
-            if not configuration100.Parent then
+            if not configuration99.Parent then
                 return
             end
-            local value170=createInstance("UIScale",{Scale=.94,Parent=configuration100})
-            configuration100.Visible=true
-            animate(value170,{Scale=1},.4,Enum.EasingStyle.Back)
+            local value169=createInstance("UIScale",{Scale=.94,Parent=configuration99})
+            configuration99.Visible=true
+            animate(value169,{Scale=1},.4,Enum.EasingStyle.Back)
             task.delay(.4,function()
-                value170:Destroy()
+                value169:Destroy()
             end)
         end)
     end
-    function NativeWindow:_revealCards(configuration101,argument51)
-        if configuration101._revealed then
+    function NativeWindow:_revealCards(configuration100,argument51)
+        if configuration100._revealed then
             return
         end
-        configuration101._revealed=true
+        configuration100._revealed=true
         local count3=0
-        for index27,entry26 in ipairs(configuration101.List:GetChildren())do
+        for index27,entry26 in ipairs(configuration100.List:GetChildren())do
             if entry26:IsA"GuiObject"then
                 revealElement(entry26,(argument51 or 0)+count3*.035)
                 count3+=1
             end
         end
     end
-    function NativeWindow:_playIntro(configuration102)
+    function NativeWindow:_playIntro(configuration101)
         if self._introDone then
             return
         end
@@ -2091,25 +2088,25 @@ local Airflow = (function()
         task.delay(1,function()
             self._autoSaveReady=true
         end)
-        local root2,body2,shadow,scale=self.Root,self.Body,self.Shadow,self.Scale
+        local root2,body2,shadow,scale2=self.Root,self.Body,self.Shadow,self.Scale
         if self.CurrentTab then
-            self:_revealCards(self.CurrentTab,configuration102 and.15 or.25)
+            self:_revealCards(self.CurrentTab,configuration101 and.15 or.25)
         end
         root2.Visible=true
-        if configuration102 then
-            scale.Scale=self._fitScale or 1
+        if configuration101 then
+            scale2.Scale=self._fitScale or 1
             root2.Position=UDim2.fromScale(.5,.5)
             animate(body2,{GroupTransparency=0},.3)
             animate(self.BodyStroke,{Transparency=0},.3)
             animate(shadow,{ImageTransparency=.6},.3)
         else
             root2.Position=UDim2.new(.5,0,.5,24)
-            animate(scale,{Scale=self._fitScale or 1},.5,Enum.EasingStyle.Back)
+            animate(scale2,{Scale=self._fitScale or 1},.5,Enum.EasingStyle.Back)
             animate(root2,{Position=UDim2.fromScale(.5,.5)},.5,Enum.EasingStyle.Quint)
             animate(body2,{GroupTransparency=0},.35)
             animate(self.BodyStroke,{Transparency=0},.35)
         end
-        if not configuration102 then
+        if not configuration101 then
             animate(shadow,{ImageTransparency=.6},.5)
         end
         for index28,entry27 in ipairs(self.Tabs)do
@@ -2122,9 +2119,9 @@ local Airflow = (function()
             end
         end)
     end
-    function NativeWindow:_showLoader(configuration103)
+    function NativeWindow:_showLoader(configuration102)
         local text18="Frame"
-        local value171=configuration103.LoadingDuration or 1.6
+        local value170=configuration102.LoadingDuration or 1.6
         local gui=self.Gui
         local canvasGroup=createInstance("CanvasGroup",{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(.5,0,.5,16),Size=UDim2.fromOffset(300,132),BackgroundColor3=nativeTheme2.Background,BorderSizePixel=0,GroupTransparency=1,ZIndex=10,Parent=gui})
         local corner=addCorner(canvasGroup,UDim.new(0,12))
@@ -2132,57 +2129,57 @@ local Airflow = (function()
         addEdgeHighlight(canvasGroup)
         addGlow(canvasGroup,UDim2.fromOffset(320,140),UDim2.new(1,-20,0,-20),.85,90)
         addGlow(canvasGroup,UDim2.fromOffset(240,100),UDim2.new(0,10,1,10),.9,270)
-        local value172=createInstance("UIScale",{Scale=.92,Parent=canvasGroup})
+        local value171=createInstance("UIScale",{Scale=.92,Parent=canvasGroup})
         local imageLabel9=createInstance("ImageLabel",{Position=UDim2.fromOffset(-25,-25),Size=UDim2.new(1,50,1,50),BackgroundTransparency=1,Image=nativeAssets.Shadow,ImageColor3=Color3.new(0,0,0),ImageTransparency=1,ScaleType=Enum.ScaleType.Slice,SliceCenter=Rect.new(49,49,450,450),ZIndex=0,Parent=canvasGroup})
-        local value173=createInstance(text18,{Position=UDim2.fromOffset(24,26),Size=UDim2.fromOffset(40,40),BackgroundTransparency=1,Parent=canvasGroup})
-        local imageLabel10=createInstance("ImageLabel",{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=UDim2.fromScale(.5,.5),Rotation=-14,BackgroundTransparency=1,ImageColor3=nativeTheme2.Accent,ImageTransparency=1,ScaleType=Enum.ScaleType.Fit,Parent=value173})
-        applyIcon(imageLabel10,configuration103.Icon or nativeAssets.Logo)
+        local value172=createInstance(text18,{Position=UDim2.fromOffset(24,26),Size=UDim2.fromOffset(40,40),BackgroundTransparency=1,Parent=canvasGroup})
+        local imageLabel10=createInstance("ImageLabel",{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=UDim2.fromScale(.5,.5),Rotation=-14,BackgroundTransparency=1,ImageColor3=nativeTheme2.Accent,ImageTransparency=1,ScaleType=Enum.ScaleType.Fit,Parent=value172})
+        applyIcon(imageLabel10,configuration102.Icon or nativeAssets.Logo)
         task.delay(.15,function()
             animate(imageLabel10,{Size=UDim2.fromScale(.85,.85),Rotation=0,ImageTransparency=0},.6,Enum.EasingStyle.Back)
         end)
-        createLabel{Position=UDim2.fromOffset(78,30),Size=UDim2.new(1,-100,0,22),Text=configuration103.LoadingTitle or configuration103.Title or"Airflow",TextSize=20,Parent=canvasGroup}
-        local textLabel15=createLabel{Position=UDim2.fromOffset(78,52),Size=UDim2.new(1,-100,0,16),Text=configuration103.LoadingText or configuration103.Subtitle or"Loading",TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=canvasGroup}
-        local value174=createInstance(text18,{Position=UDim2.new(0,24,1,-30),Size=UDim2.new(1,-48,0,4),BackgroundColor3=nativeTheme2.Surface3,BorderSizePixel=0,ClipsDescendants=true,Parent=canvasGroup})
+        createLabel{Position=UDim2.fromOffset(78,30),Size=UDim2.new(1,-100,0,22),Text=configuration102.LoadingTitle or configuration102.Title or"Airflow",TextSize=20,Parent=canvasGroup}
+        local textLabel15=createLabel{Position=UDim2.fromOffset(78,52),Size=UDim2.new(1,-100,0,16),Text=configuration102.LoadingText or configuration102.Subtitle or"Loading",TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=canvasGroup}
+        local value173=createInstance(text18,{Position=UDim2.new(0,24,1,-30),Size=UDim2.new(1,-48,0,4),BackgroundColor3=nativeTheme2.Surface3,BorderSizePixel=0,ClipsDescendants=true,Parent=canvasGroup})
+        addCorner(value173,UDim.new(1,0))
+        local value174=createInstance(text18,{Size=UDim2.fromScale(0,1),BackgroundColor3=nativeTheme2.Accent,BorderSizePixel=0,Parent=value173})
         addCorner(value174,UDim.new(1,0))
-        local value175=createInstance(text18,{Size=UDim2.fromScale(0,1),BackgroundColor3=nativeTheme2.Accent,BorderSizePixel=0,Parent=value174})
-        addCorner(value175,UDim.new(1,0))
-        local value176=createInstance(text18,{Position=UDim2.fromScale(-.4,0),Size=UDim2.fromScale(.4,1),BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=.6,BorderSizePixel=0,ZIndex=2,Parent=value174})
-        createInstance("UIGradient",{Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(.5,0),NumberSequenceKeypoint.new(1,1)},Parent=value176})
+        local value175=createInstance(text18,{Position=UDim2.fromScale(-.4,0),Size=UDim2.fromScale(.4,1),BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=.6,BorderSizePixel=0,ZIndex=2,Parent=value173})
+        createInstance("UIGradient",{Transparency=NumberSequence.new{NumberSequenceKeypoint.new(0,1),NumberSequenceKeypoint.new(.5,0),NumberSequenceKeypoint.new(1,1)},Parent=value175})
         animate(canvasGroup,{GroupTransparency=0,Position=UDim2.fromScale(.5,.5)},.4,Enum.EasingStyle.Quint)
-        animate(value172,{Scale=1},.5,Enum.EasingStyle.Back)
+        animate(value171,{Scale=1},.5,Enum.EasingStyle.Back)
         animate(imageLabel9,{ImageTransparency=.6},.4)
-        local value177=TweenService2:Create(value176,TweenInfo.new(1.1,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1),{Position=UDim2.fromScale(1,0)})
-        value177:Play()
-        animate(value175,{Size=UDim2.fromScale(.85,1)},value171*.8,Enum.EasingStyle.Quart)
+        local value176=TweenService2:Create(value175,TweenInfo.new(1.1,Enum.EasingStyle.Sine,Enum.EasingDirection.InOut,-1),{Position=UDim2.fromScale(1,0)})
+        value176:Play()
+        animate(value174,{Size=UDim2.fromScale(.85,1)},value170*.8,Enum.EasingStyle.Quart)
         task.spawn(loadLucideIcons)
-        local value178=configuration103.LoadingSteps or{"Preparing interface","Loading icons","Almost there"}
-        for index29,entry28 in ipairs(value178)do
-            task.delay(value171*(index29-1)/#value178,function()
+        local value177=configuration102.LoadingSteps or{"Preparing interface","Loading icons","Almost there"}
+        for index29,entry28 in ipairs(value177)do
+            task.delay(value170*(index29-1)/#value177,function()
                 if canvasGroup.Parent then
                     textLabel15.Text=entry28
                 end
             end)
         end
-        task.delay(value171,function()
-            animate(value175,{Size=UDim2.fromScale(1,1)},.25,Enum.EasingStyle.Quint)
+        task.delay(value170,function()
+            animate(value174,{Size=UDim2.fromScale(1,1)},.25,Enum.EasingStyle.Quint)
             task.delay(.25,function()
-                value177:Cancel()
+                value176:Cancel()
                 for index30,entry29 in ipairs(canvasGroup:GetChildren())do
                     if entry29:IsA"TextLabel"then
                         animate(entry29,{TextTransparency=1},.15)
                     end
                 end
-                for index31,entry30 in ipairs(value173:GetChildren())do
+                for index31,entry30 in ipairs(value172:GetChildren())do
                     animate(entry30,{ImageTransparency=1},.15)
                 end
+                animate(value173,{BackgroundTransparency=1},.15)
                 animate(value174,{BackgroundTransparency=1},.15)
-                animate(value175,{BackgroundTransparency=1},.15)
-                animate(value176,{BackgroundTransparency=1},.1)
-                local value179=self._fitScale or 1
+                animate(value175,{BackgroundTransparency=1},.1)
+                local value178=self._fitScale or 1
                 local size2=self.Root.Size
-                animate(canvasGroup,{Size=UDim2.fromOffset(size2.X.Offset*value179,size2.Y.Offset*value179),Position=UDim2.fromScale(.5,.5)},.5,Enum.EasingStyle.Quint)
+                animate(canvasGroup,{Size=UDim2.fromOffset(size2.X.Offset*value178,size2.Y.Offset*value178),Position=UDim2.fromScale(.5,.5)},.5,Enum.EasingStyle.Quint)
                 animate(corner,{CornerRadius=UDim.new(0,10)},.5,Enum.EasingStyle.Quint)
-                animate(value172,{Scale=1},.5,Enum.EasingStyle.Quint)
+                animate(value171,{Scale=1},.5,Enum.EasingStyle.Quint)
                 task.delay(.28,function()
                     self:_playIntro(true)
                     animate(canvasGroup,{GroupTransparency=1},.25)
@@ -2195,16 +2192,16 @@ local Airflow = (function()
             end)
         end)
     end
-    function NativeWindow:_fitToScreen(configuration104)
+    function NativeWindow:_fitToScreen(configuration103)
         local absoluteSize2=self.Gui.AbsoluteSize
         if absoluteSize2.X==0 or absoluteSize2.Y==0 then
             return
         end
         local size3=self.Root.Size
-        local value180=math.min(1,(absoluteSize2.X-24)/math.max(size3.X.Offset,1),(absoluteSize2.Y-24)/math.max(size3.Y.Offset,1))
-        self._fitScale=math.max(value180,.45)
+        local value179=math.min(1,(absoluteSize2.X-24)/math.max(size3.X.Offset,1),(absoluteSize2.Y-24)/math.max(size3.Y.Offset,1))
+        self._fitScale=math.max(value179,.45)
         if self._introDone and self.Open then
-            if configuration104 then
+            if configuration103 then
                 self.Scale.Scale=self._fitScale
             else
                 animate(self.Scale,{Scale=self._fitScale},.2)
@@ -2217,46 +2214,46 @@ local Airflow = (function()
         end
         local absoluteSize3=self.Gui.AbsoluteSize
         local root3=self.Root
-        local value181=root3.AbsoluteSize/2
-        local value182=root3.AbsolutePosition+value181-self.Gui.AbsolutePosition
-        local value183=Vector2.new(math.clamp(value182.X,math.min(value181.X,absoluteSize3.X/2),math.max(absoluteSize3.X-value181.X,absoluteSize3.X/2)),math.clamp(value182.Y,math.min(value181.Y,absoluteSize3.Y/2),math.max(absoluteSize3.Y-value181.Y,absoluteSize3.Y/2)))
-        if(value183-value182).Magnitude>.5 then
-            animate(root3,{Position=UDim2.fromOffset(value183.X,value183.Y)},.25,Enum.EasingStyle.Quint)
+        local value180=root3.AbsoluteSize/2
+        local value181=root3.AbsolutePosition+value180-self.Gui.AbsolutePosition
+        local value182=Vector2.new(math.clamp(value181.X,math.min(value180.X,absoluteSize3.X/2),math.max(absoluteSize3.X-value180.X,absoluteSize3.X/2)),math.clamp(value181.Y,math.min(value180.Y,absoluteSize3.Y/2),math.max(absoluteSize3.Y-value180.Y,absoluteSize3.Y/2)))
+        if(value182-value181).Magnitude>.5 then
+            animate(root3,{Position=UDim2.fromOffset(value182.X,value182.Y)},.25,Enum.EasingStyle.Quint)
         end
     end
-    function NativeWindow:_createOpenButton(configuration105)
+    function NativeWindow:_createOpenButton(configuration104)
         local gui2=self.Gui
         local textButton8=createInstance("TextButton",{AnchorPoint=Vector2.new(.5,0),Position=UDim2.new(.5,0,0,14),Size=UDim2.fromOffset(0,40),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=nativeTheme2.Background,BorderSizePixel=0,Text="",AutoButtonColor=false,ZIndex=30,Parent=gui2})
         addCorner(textButton8,UDim.new(1,0))
         addStroke(textButton8,nativeTheme2.Stroke)
         addPadding(textButton8,12,16)
         local imageLabel11=createInstance("ImageLabel",{AnchorPoint=Vector2.new(0,.5),Position=UDim2.new(0,0,.5,0),Size=UDim2.fromOffset(20,20),BackgroundTransparency=1,ImageColor3=nativeTheme2.Accent,ScaleType=Enum.ScaleType.Fit,ZIndex=31,Parent=textButton8})
-        applyIcon(imageLabel11,configuration105.Icon or nativeAssets.Logo)
-        createLabel{Position=UDim2.fromOffset(28,0),Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,Text=configuration105.Title or"Airflow",TextSize=13,TextTruncate=Enum.TextTruncate.None,ZIndex=31,Parent=textButton8}
+        applyIcon(imageLabel11,configuration104.Icon or nativeAssets.Logo)
+        createLabel{Position=UDim2.fromOffset(28,0),Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,Text=configuration104.Title or"Airflow",TextSize=13,TextTruncate=Enum.TextTruncate.None,ZIndex=31,Parent=textButton8}
         self.OpenButton=textButton8
         local enabled12,enabled13=false,false
         local zero2=Vector2.zero
-        textButton8.InputBegan:Connect(function(configuration106)
-            if isPrimaryInput(configuration106)then
+        textButton8.InputBegan:Connect(function(configuration105)
+            if isPrimaryInput(configuration105)then
                 enabled12,enabled13=true,false
                 zero2=getPointerPosition()-textButton8.AbsolutePosition
             end
         end)
-        table.insert(self._connections,UserInputService.InputChanged:Connect(function(configuration107)
+        table.insert(self._connections,UserInputService.InputChanged:Connect(function(configuration106)
             if not enabled12 then
                 return
             end
-            if isPointerMovement(configuration107)then
-                local value184=getPointerPosition()-zero2-gui2.AbsolutePosition
-                if(value184-(textButton8.AbsolutePosition-gui2.AbsolutePosition)).Magnitude>3 then
+            if isPointerMovement(configuration106)then
+                local value183=getPointerPosition()-zero2-gui2.AbsolutePosition
+                if(value183-(textButton8.AbsolutePosition-gui2.AbsolutePosition)).Magnitude>3 then
                     enabled13=true
                 end
                 textButton8.AnchorPoint=Vector2.new(0,0)
-                textButton8.Position=UDim2.fromOffset(math.clamp(value184.X,0,math.max(gui2.AbsoluteSize.X-textButton8.AbsoluteSize.X,0)),math.clamp(value184.Y,0,math.max(gui2.AbsoluteSize.Y-textButton8.AbsoluteSize.Y,0)))
+                textButton8.Position=UDim2.fromOffset(math.clamp(value183.X,0,math.max(gui2.AbsoluteSize.X-textButton8.AbsoluteSize.X,0)),math.clamp(value183.Y,0,math.max(gui2.AbsoluteSize.Y-textButton8.AbsoluteSize.Y,0)))
             end
         end))
-        table.insert(self._connections,UserInputService.InputEnded:Connect(function(configuration108)
-            if enabled12 and isPrimaryInput(configuration108)then
+        table.insert(self._connections,UserInputService.InputEnded:Connect(function(configuration107)
+            if enabled12 and isPrimaryInput(configuration107)then
                 enabled12=false
                 if not enabled13 then
                     self:Toggle()
@@ -2264,15 +2261,15 @@ local Airflow = (function()
             end
         end))
     end
-    function NativeWindow:_enableResize(configuration109)
-        local value185=self.MaxSize or Vector2.new(math.huge,math.huge)
+    function NativeWindow:_enableResize(configuration108)
+        local value184=self.MaxSize or Vector2.new(math.huge,math.huge)
         local frame14=createInstance("Frame",{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(1,4,1,4),Size=UDim2.fromOffset(32,32),BackgroundTransparency=1,Active=true,ZIndex=20,Parent=self.Root})
         local imageLabel12,enabled14=createInstance("ImageLabel",{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(.5,-16,.5,-16),Size=UDim2.fromOffset(96,96),BackgroundTransparency=1,Image="rbxassetid://120997033468887",ImageColor3=nativeTheme2.Accent,ImageTransparency=.8,ZIndex=20,Parent=frame14}),false
         local size4=self.Root.Size
         local zero3=Vector2.zero
-        local value186
-        frame14.InputBegan:Connect(function(configuration110)
-            if isPrimaryInput(configuration110)then
+        local value185
+        frame14.InputBegan:Connect(function(configuration109)
+            if isPrimaryInput(configuration109)then
                 enabled14=true
                 size4=self.Root.Size
                 zero3=getPointerPosition()
@@ -2289,70 +2286,70 @@ local Airflow = (function()
                 animate(imageLabel12,{ImageTransparency=.8},.17)
             end
         end)
-        table.insert(self._connections,UserInputService.InputEnded:Connect(function(configuration111)
-            if enabled14 and isPrimaryInput(configuration111)then
+        table.insert(self._connections,UserInputService.InputEnded:Connect(function(configuration110)
+            if enabled14 and isPrimaryInput(configuration110)then
                 enabled14=false
                 animate(imageLabel12,{ImageTransparency=.8},.17)
-                if value186 then
-                    self.Root.Size=UDim2.fromOffset(value186.X,value186.Y)
-                    value186=nil
+                if value185 then
+                    self.Root.Size=UDim2.fromOffset(value185.X,value185.Y)
+                    value185=nil
                 end
                 self:_fitToScreen()
                 self:_clampToScreen()
             end
         end))
-        table.insert(self._frameSteps,function(configuration112)
+        table.insert(self._frameSteps,function(configuration111)
             if not enabled14 then
                 return
             end
-            local value187=(getPointerPosition()-zero3)/self.Scale.Scale
-            value186=Vector2.new(math.clamp(size4.X.Offset+value187.X*2,configuration109.X,value185.X),math.clamp(size4.Y.Offset+value187.Y*2,configuration109.Y,value185.Y))
-            local value188=Vector2.new(self.Root.Size.X.Offset,self.Root.Size.Y.Offset)
-            local value189=1-math.exp(-configuration112*35)
-            local value190=value188:Lerp(value186,value189)
-            value190=Vector2.new(math.floor(value190.X+.5),math.floor(value190.Y+.5))
-            if value190~=value188 then
-                self.Root.Size=UDim2.fromOffset(value190.X,value190.Y)
+            local value186=(getPointerPosition()-zero3)/self.Scale.Scale
+            value185=Vector2.new(math.clamp(size4.X.Offset+value186.X*2,configuration108.X,value184.X),math.clamp(size4.Y.Offset+value186.Y*2,configuration108.Y,value184.Y))
+            local value187=Vector2.new(self.Root.Size.X.Offset,self.Root.Size.Y.Offset)
+            local value188=1-math.exp(-configuration111*35)
+            local value189=value187:Lerp(value185,value188)
+            value189=Vector2.new(math.floor(value189.X+.5),math.floor(value189.Y+.5))
+            if value189~=value187 then
+                self.Root.Size=UDim2.fromOffset(value189.X,value189.Y)
             end
         end)
     end
-    local function clampChannel(configuration113,argument52)
-        return configuration113.ConfigFolder.."/"..argument52..".json"
+    local function clampChannel(configuration112,argument52)
+        return configuration112.ConfigFolder.."/"..argument52..".json"
     end
     local function roundChannel()
         local text19="function"
         return type(writefile)==text19 and type(readfile)==text19 and type(isfile)==text19
     end
-    local function colorToHex(configuration114)
-        if type(isfolder)=="function"and type(makefolder)=="function"and not isfolder(configuration114)then
-            makefolder(configuration114)
+    local function colorToHex(configuration113)
+        if type(isfolder)=="function"and type(makefolder)=="function"and not isfolder(configuration113)then
+            makefolder(configuration113)
         end
     end
-    local function hexToColor(configuration115)
-        local _type=configuration115._type
-        local value191=configuration115:Get()
+    local function hexToColor(configuration114)
+        local _type=configuration114._type
+        local value190=configuration114:Get()
         if _type=="Keybind"then
-            return{Type=_type,Value=value191 and value191.Name or nil}
+            return{Type=_type,Value=value190 and value190.Name or nil}
         elseif _type=="ColorPicker"then
-            return{Type=_type,Value={value191.R,value191.G,value191.B}}
+            return{Type=_type,Value={value190.R,value190.G,value190.B}}
         end
-        return{Type=_type,Value=value191}
+        return{Type=_type,Value=value190}
     end
-    local function parseColor(configuration116,argument53,argument54)
-        local _type2=configuration116._type
-        local value192=argument53.Value
+    local function parseColor(configuration115,argument53,argument54)
+        local _type2=configuration115._type
+        local value191=argument53.Value
         if _type2=="Keybind"then
-            configuration116:Set(value192 and Enum.KeyCode[value192]or nil,argument54)
+            configuration115:Set(value191 and Enum.KeyCode[value191]or nil,argument54)
         elseif _type2=="ColorPicker"then
-            if type(value192)=="table"then
-                configuration116:Set(Color3.new(value192[1],value192[2],value192[3]),argument54)
+            if type(value191)=="table"then
+                configuration115:Set(Color3.new(value191[1],value191[2],value191[3]),argument54)
             end
-        elseif value192~=nil then
-            configuration116:Set(value192,argument54)
+        elseif value191~=nil then
+            configuration115:Set(value191,argument54)
         end
     end
-    function NativeWindow:SaveConfig(configuration117)
-        configuration117=configuration117 or self.ConfigName
+    function NativeWindow:SaveConfig(configuration116)
+        configuration116=configuration116 or self.ConfigName
         if not roundChannel()then
             return false,"file API unavailable"
         end
@@ -2364,24 +2361,24 @@ local Airflow = (function()
             end
         end
         local success7,result6=pcall(function()
-            writefile(clampChannel(self,configuration117),HttpService:JSONEncode(entries21))
+            writefile(clampChannel(self,configuration116),HttpService:JSONEncode(entries21))
         end)
         if success7 then
-            self.ConfigName=configuration117
+            self.ConfigName=configuration116
         end
         return success7,result6
     end
-    function NativeWindow:LoadConfig(configuration118,argument55)
-        configuration118=configuration118 or self.ConfigName
+    function NativeWindow:LoadConfig(configuration117,argument55)
+        configuration117=configuration117 or self.ConfigName
         if not roundChannel()then
             return false,"file API unavailable"
         end
-        local value193=clampChannel(self,configuration118)
-        if not isfile(value193)then
-            return false,"no config named "..configuration118
+        local value192=clampChannel(self,configuration117)
+        if not isfile(value192)then
+            return false,"no config named "..configuration117
         end
         local success8,result7=pcall(function()
-            return HttpService:JSONDecode(readfile(value193))
+            return HttpService:JSONDecode(readfile(value192))
         end)
         if not success8 or type(result7)~="table"then
             return false,"config is not valid JSON"
@@ -2389,25 +2386,25 @@ local Airflow = (function()
         local _autoSaveEnabled=self._autoSaveEnabled
         self._autoSaveEnabled=false
         for index33,entry32 in pairs(result7)do
-            local value194=NativeLibrary.Flags[index33]
-            if value194 and type(value194.Set)=="function"and type(entry32)=="table"and entry32.Type==value194._type then
-                pcall(parseColor,value194,entry32,argument55==true)
+            local value193=NativeLibrary.Flags[index33]
+            if value193 and type(value193.Set)=="function"and type(entry32)=="table"and entry32.Type==value193._type then
+                pcall(parseColor,value193,entry32,argument55==true)
             end
         end
         self._autoSaveEnabled=_autoSaveEnabled
         self._autoSaveReady=true
-        self.ConfigName=configuration118
+        self.ConfigName=configuration117
         return true
     end
-    function NativeWindow:DeleteConfig(configuration119)
+    function NativeWindow:DeleteConfig(configuration118)
         if not roundChannel()or type(delfile)~="function"then
             return false,"file API unavailable"
         end
-        local value195=clampChannel(self,configuration119)
-        if not isfile(value195)then
-            return false,"no config named "..configuration119
+        local value194=clampChannel(self,configuration118)
+        if not isfile(value194)then
+            return false,"no config named "..configuration118
         end
-        delfile(value195)
+        delfile(value194)
         return true
     end
     function NativeWindow:ListConfigs()
@@ -2416,9 +2413,9 @@ local Airflow = (function()
             return entries22
         end
         for index34,entry33 in ipairs(listfiles(self.ConfigFolder))do
-            local value196=entry33:match"([^/\\]+)%.json$"
-            if value196 then
-                table.insert(entries22,value196)
+            local value195=entry33:match"([^/\\]+)%.json$"
+            if value195 then
+                table.insert(entries22,value195)
             end
         end
         table.sort(entries22)
@@ -2439,8 +2436,8 @@ local Airflow = (function()
             end
         end)
     end
-    local function createEmptyPage(configuration120,argument56,argument57)
-        local frame15=createInstance("Frame",{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(.5,0,.5,-10),Size=UDim2.fromOffset(200,70),BackgroundTransparency=1,Parent=configuration120})
+    local function createEmptyPage(configuration119,argument56,argument57)
+        local frame15=createInstance("Frame",{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(.5,0,.5,-10),Size=UDim2.fromOffset(200,70),BackgroundTransparency=1,Parent=configuration119})
         local imageLabel13=createInstance("ImageLabel",{AnchorPoint=Vector2.new(.5,0),Position=UDim2.new(.5,0,0,0),Size=UDim2.fromOffset(26,26),BackgroundTransparency=1,ImageColor3=nativeTheme2.Muted,ImageTransparency=.15,ScaleType=Enum.ScaleType.Fit,Parent=frame15})
         applyIcon(imageLabel13,argument56)
         local textLabel16=createLabel{Position=UDim2.fromOffset(0,36),Size=UDim2.new(1,0,0,16),Text=argument57,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,TextXAlignment=Enum.TextXAlignment.Center,Parent=frame15}
@@ -2457,10 +2454,10 @@ local Airflow = (function()
         createLabel{Position=UDim2.fromOffset(icon6 and 36 or 14,12),Size=UDim2.new(1,-(icon6 and 50 or 28),0,16),Text=title2,TextSize=12,TextColor3=nativeTheme2.Muted,Parent=frame16}
         return createLabel{Position=UDim2.fromOffset(14,34),Size=UDim2.new(1,-28,0,18),Text="…",TextSize=15,Parent=frame16}
     end
-    local function revealHomeContent(configuration121)
+    local function revealHomeContent(configuration120)
         local entries23={}
-        local function callback44(configuration122)
-            for index35,entry34 in ipairs(configuration122:GetChildren())do
+        local function callback44(configuration121)
+            for index35,entry34 in ipairs(configuration121:GetChildren())do
                 if entry34:IsA"TextLabel"or entry34:IsA"TextButton"or entry34:IsA"TextBox"then
                     table.insert(entries23,{entry34,"TextTransparency",entry34.TextTransparency})
                 elseif entry34:IsA"ImageLabel"or entry34:IsA"ImageButton"then
@@ -2473,44 +2470,44 @@ local Airflow = (function()
                 callback44(entry34)
             end
         end
-        if configuration121:IsA"Frame"then
-            table.insert(entries23,{configuration121,"BackgroundTransparency",configuration121.BackgroundTransparency})
+        if configuration120:IsA"Frame"then
+            table.insert(entries23,{configuration120,"BackgroundTransparency",configuration120.BackgroundTransparency})
         end
-        callback44(configuration121)
+        callback44(configuration120)
         for index36,entry35 in ipairs(entries23)do
             entry35[1][entry35[2]]=1
             animate(entry35[1],{[entry35[2]]=entry35[3]},.28)
         end
     end
-    local function revealPage(configuration123,argument58)
+    local function revealPage(configuration122,argument58)
         argument58=argument58 or 0
-        configuration123.GroupTransparency=1
-        configuration123.Position=UDim2.fromOffset(0,argument58+14)
-        configuration123.Visible=true
-        animate(configuration123,{GroupTransparency=0,Position=UDim2.fromOffset(0,argument58)},.32,Enum.EasingStyle.Quint)
+        configuration122.GroupTransparency=1
+        configuration122.Position=UDim2.fromOffset(0,argument58+14)
+        configuration122.Visible=true
+        animate(configuration122,{GroupTransparency=0,Position=UDim2.fromOffset(0,argument58)},.32,Enum.EasingStyle.Quint)
     end
-    function NativeWindow:_buildHome(configuration124)
+    function NativeWindow:_buildHome(configuration123)
         local text20,text21,text22,text23="Frame","UIListLayout","NoDrag","Executor"
-        local value197=self:Tab{Name=configuration124.Name or"Home",Desc=configuration124.Desc,Icon=configuration124.Icon or"house"}
-        local list2=value197.List
-        local value198=configuration124.Pages or configuration124.Tabs
+        local value196=self:Tab{Name=configuration123.Name or"Home",Desc=configuration123.Desc,Icon=configuration123.Icon or"house"}
+        local list2=value196.List
+        local value197=configuration123.Pages or configuration123.Tabs
         local entries24={}
-        local value199
-        if type(value198)=="table"and#value198>0 then
-            value199=createInstance(text20,{Size=UDim2.new(1,0,0,32),BackgroundTransparency=1,LayoutOrder=1,Parent=list2})
-            createInstance(text21,{FillDirection=Enum.FillDirection.Horizontal,SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,6),Parent=value199})
+        local value198
+        if type(value197)=="table"and#value197>0 then
+            value198=createInstance(text20,{Size=UDim2.new(1,0,0,32),BackgroundTransparency=1,LayoutOrder=1,Parent=list2})
+            createInstance(text21,{FillDirection=Enum.FillDirection.Horizontal,SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,6),Parent=value198})
         end
-        local greeting=configuration124.Greeting
+        local greeting=configuration123.Greeting
         if greeting==nil then
-            local value200=tonumber(os.date"%H")or 12
-            local value201=value200<12 and"morning"or(value200<18 and"afternoon"or"evening")
-            greeting="Good "..value201.."."
+            local value199=tonumber(os.date"%H")or 12
+            local value200=value199<12 and"morning"or(value199<18 and"afternoon"or"evening")
+            greeting="Good "..value200.."."
         end
-        local value202=createInstance(text20,{Size=UDim2.new(1,0,0,58),BackgroundColor3=nativeTheme2.Surface2,BorderSizePixel=0,LayoutOrder=2,Parent=list2})
-        value202:SetAttribute(text22,true)
-        addCorner(value202)
-        addStroke(value202)
-        local imageLabel14=createInstance("ImageLabel",{Position=UDim2.fromOffset(12,11),Size=UDim2.fromOffset(36,36),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value202})
+        local value201=createInstance(text20,{Size=UDim2.new(1,0,0,58),BackgroundColor3=nativeTheme2.Surface2,BorderSizePixel=0,LayoutOrder=2,Parent=list2})
+        value201:SetAttribute(text22,true)
+        addCorner(value201)
+        addStroke(value201)
+        local imageLabel14=createInstance("ImageLabel",{Position=UDim2.fromOffset(12,11),Size=UDim2.fromOffset(36,36),BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value201})
         imageLabel14:SetAttribute("UIUnthemed",true)
         addCorner(imageLabel14,UDim.new(0,8))
         addStroke(imageLabel14)
@@ -2522,13 +2519,13 @@ local Airflow = (function()
                 imageLabel14.Image=result8
             end
         end)
-        createLabel{Position=UDim2.fromOffset(58,11),Size=UDim2.new(1,-72,0,18),Text=(configuration124.Welcome or"Hello, ")..LocalPlayer.DisplayName,TextSize=15,Parent=value202}
-        createLabel{Position=UDim2.fromOffset(58,30),Size=UDim2.new(1,-72,0,16),Text=greeting,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=value202}
-        if type(configuration124.AccessProvider) == "function" then
-            value202.Size = UDim2.new(1, 0, 0, 90)
+        createLabel{Position=UDim2.fromOffset(58,11),Size=UDim2.new(1,-72,0,18),Text=(configuration123.Welcome or"Hello, ")..LocalPlayer.DisplayName,TextSize=15,Parent=value201}
+        createLabel{Position=UDim2.fromOffset(58,30),Size=UDim2.new(1,-72,0,16),Text=greeting,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=value201}
+        if type(configuration123.AccessProvider) == "function" then
+            value201.Size = UDim2.new(1, 0, 0, 90)
             local badgeRow = createInstance("Frame", {
         Name = "AccessBadges", Position = UDim2.fromOffset(12, 58), Size = UDim2.new(1, -24, 0, 22),
-        BackgroundTransparency = 1, Parent = value202,
+        BackgroundTransparency = 1, Parent = value201,
     })
             createInstance("UIListLayout", {
         FillDirection = Enum.FillDirection.Horizontal, SortOrder = Enum.SortOrder.LayoutOrder,
@@ -2553,7 +2550,7 @@ local Airflow = (function()
                 if self._destroyed or not expirationBadge.Parent then
                     return
                 end
-                local success, metadata = pcall(configuration124.AccessProvider)
+                local success, metadata = pcall(configuration123.AccessProvider)
                 if not success or type(metadata) ~= "table" then
                     metadata = {}
                 end
@@ -2590,47 +2587,47 @@ local Airflow = (function()
                     end
                 end
             end
-            value197._accessBadges = { Access = accessBadge, Expiration = expirationBadge }
-            value197._refreshAccess = refreshAccess
+            value196._accessBadges = { Access = accessBadge, Expiration = expirationBadge }
+            value196._refreshAccess = refreshAccess
             refreshAccess()
         end
-        local value203=createInstance(text20,{Name="SystemInfo",Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1,LayoutOrder=3,Parent=list2})
-        createInstance(text21,{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,8),Parent=value203})
-        if configuration124.Sections~=false then
-            local value204=createInstance(text20,{Size=UDim2.new(1,0,0,24),BackgroundTransparency=1,LayoutOrder=1,Parent=value203})
-            local textLabel17=createLabel{Position=UDim2.fromOffset(2,6),Size=UDim2.new(0,0,0,16),AutomaticSize=Enum.AutomaticSize.X,Text=uppercasePortuguese(configuration124.SectionName or"System info"),TextSize=12,TextColor3=nativeTheme2.Muted,TextTruncate=Enum.TextTruncate.None,Parent=value204}
-            local value205=createInstance(text20,{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,0,0,14),Size=UDim2.new(1,-12,0,1),BackgroundColor3=nativeTheme2.Stroke,BorderSizePixel=0,Parent=value204})
+        local value202=createInstance(text20,{Name="SystemInfo",Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1,LayoutOrder=3,Parent=list2})
+        createInstance(text21,{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,8),Parent=value202})
+        if configuration123.Sections~=false then
+            local value203=createInstance(text20,{Size=UDim2.new(1,0,0,24),BackgroundTransparency=1,LayoutOrder=1,Parent=value202})
+            local textLabel17=createLabel{Position=UDim2.fromOffset(2,6),Size=UDim2.new(0,0,0,16),AutomaticSize=Enum.AutomaticSize.X,Text=uppercasePortuguese(configuration123.SectionName or"System info"),TextSize=12,TextColor3=nativeTheme2.Muted,TextTruncate=Enum.TextTruncate.None,Parent=value203}
+            local value204=createInstance(text20,{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,0,0,14),Size=UDim2.new(1,-12,0,1),BackgroundColor3=nativeTheme2.Stroke,BorderSizePixel=0,Parent=value203})
             local function callback45()
-                value205.Size=UDim2.new(1,-(textLabel17.AbsoluteSize.X+14),0,1)
+                value204.Size=UDim2.new(1,-(textLabel17.AbsoluteSize.X+14),0,1)
             end
             textLabel17:GetPropertyChangedSignal"AbsoluteSize":Connect(callback45)
             task.defer(callback45)
         end
-        local value206=createInstance(text20,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1,LayoutOrder=2,Parent=value203})
-        createInstance("UIGridLayout",{CellSize=UDim2.new(.5,-4,0,62),CellPadding=UDim2.fromOffset(8,8),SortOrder=Enum.SortOrder.LayoutOrder,Parent=value206})
-        local value207=configuration124.Stats or{"FPS","Ping",text23,"Game","Time"}
+        local value205=createInstance(text20,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1,LayoutOrder=2,Parent=value202})
+        createInstance("UIGridLayout",{CellSize=UDim2.new(.5,-4,0,62),CellPadding=UDim2.fromOffset(8,8),SortOrder=Enum.SortOrder.LayoutOrder,Parent=value205})
+        local value206=configuration123.Stats or{"FPS","Ping",text23,"Game","Time"}
         local entries25={}
-        for index37,entry36 in ipairs(value207)do
+        for index37,entry36 in ipairs(value206)do
             entries25[entry36]=true
         end
         local count4=0
-        local function callback46(configuration125,argument59,argument60)
-            if not entries25[configuration125]then
+        local function callback46(configuration124,argument59,argument60)
+            if not entries25[configuration124]then
                 return nil
             end
             count4+=1
-            return createStatisticCard(value206,count4,argument59,(configuration124.Labels or{})[configuration125]or argument60)
+            return createStatisticCard(value205,count4,argument59,(configuration123.Labels or{})[configuration124]or argument60)
         end
         local fPSValueLabel=callback46("FPS","activity","FPS")
         local pingValueLabel=callback46("Ping","wifi","Ping")
-        local value208=callback46(text23,"terminal",text23)
+        local value207=callback46(text23,"terminal",text23)
         local gameValueLabel=callback46("Game","gamepad-2","Game")
         local timeValueLabel=callback46("Time","clock","Time of day")
         local playersValueLabel=callback46("Players","users","Players")
         local uptimeValueLabel=callback46("Uptime","timer","Session")
-        if value208 then
+        if value207 then
             local executor = detectExecutor()
-            value208.Text = executor == "Unknown" and "Indisponível" or executor
+            value207.Text = executor == "Unknown" and "Indisponível" or executor
         end
         if gameValueLabel then
             gameValueLabel.Text = "Carregando..."
@@ -2643,13 +2640,13 @@ local Airflow = (function()
         end
         local frames, elapsed = 0, 0
         local started = os.clock()
-        local memoryLabel = callback46("Memory", "cpu", (configuration124.Labels or {}).Memory or "Luau memory")
+        local memoryLabel = callback46("Memory", "cpu", (configuration123.Labels or {}).Memory or "Luau memory")
         local function refresh()
-            if self._destroyed or not value197.List.Parent or not value197._page.Parent then
+            if self._destroyed or not value196.List.Parent or not value196._page.Parent then
                 return
             end
-            if value197._refreshAccess then
-                value197._refreshAccess()
+            if value196._refreshAccess then
+                value196._refreshAccess()
             end
             if fPSValueLabel then
                 fPSValueLabel.Text = elapsed > 0 and tostring(math.floor(frames / elapsed + 0.5)) or "—"
@@ -2661,7 +2658,7 @@ local Airflow = (function()
                 pingValueLabel.Text = success and type(ping) == "number" and tostring(math.floor(ping * 1000 + 0.5)) .. " ms" or "Indisponível"
             end
             if timeValueLabel then
-                timeValueLabel.Text = os.date(configuration124.TimeFormat or "%H:%M")
+                timeValueLabel.Text = os.date(configuration123.TimeFormat or "%H:%M")
             end
             if playersValueLabel then
                 playersValueLabel.Text = #Players2:GetPlayers() .. " / " .. Players2.MaxPlayers
@@ -2675,13 +2672,13 @@ local Airflow = (function()
                 memoryLabel.Text = success and type(kilobytes) == "number" and string.format("%.1f MB", kilobytes / 1024) or "Indisponível"
             end
         end
-        value197._homeStatValues = { FPS = fPSValueLabel, Ping = pingValueLabel, Executor = value208, Game = gameValueLabel, Time = timeValueLabel, Players = playersValueLabel, Uptime = uptimeValueLabel, Memory = memoryLabel }
+        value196._homeStatValues = { FPS = fPSValueLabel, Ping = pingValueLabel, Executor = value207, Game = gameValueLabel, Time = timeValueLabel, Players = playersValueLabel, Uptime = uptimeValueLabel, Memory = memoryLabel }
         refresh()
         self:_listen("Render", function(delta)
-            if self._destroyed or not value197.List.Parent or not value197._page.Parent then
+            if self._destroyed or not value196.List.Parent or not value196._page.Parent then
                 return
             end
-            if not self.Open or not self.Gui.Enabled or self.CurrentTab ~= value197 then
+            if not self.Open or not self.Gui.Enabled or self.CurrentTab ~= value196 then
                 frames, elapsed = 0, 0
                 return
             end
@@ -2692,97 +2689,97 @@ local Airflow = (function()
                 frames, elapsed = 0, 0
             end
         end)
-        table.insert(entries24,{Title=configuration124.SectionName or"Details",Icon=configuration124.TabIcon or"layout-grid",Frame=value203})
-        if value199 then
-            for index38,entry37 in ipairs(value198)do
-                local value209=createInstance(text20,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1,Visible=false,LayoutOrder=3,Parent=list2})
-                createInstance(text21,{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,8),Parent=value209})
+        table.insert(entries24,{Title=configuration123.SectionName or"Details",Icon=configuration123.TabIcon or"layout-grid",Frame=value202})
+        if value198 then
+            for index38,entry37 in ipairs(value197)do
+                local value208=createInstance(text20,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1,Visible=false,LayoutOrder=3,Parent=list2})
+                createInstance(text21,{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,8),Parent=value208})
                 if type(entry37.Content)=="string"then
-                    local value210=createInstance(text20,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundColor3=nativeTheme2.Surface2,BorderSizePixel=0,LayoutOrder=1,Parent=value209})
-                    value210:SetAttribute(text22,true)
-                    addCorner(value210)
-                    addStroke(value210)
-                    addPadding(value210,14,14,12,14)
-                    createLabel{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,Text=entry37.Content,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,TextWrapped=true,TextTruncate=Enum.TextTruncate.None,TextYAlignment=Enum.TextYAlignment.Top,Parent=value210}
+                    local value209=createInstance(text20,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundColor3=nativeTheme2.Surface2,BorderSizePixel=0,LayoutOrder=1,Parent=value208})
+                    value209:SetAttribute(text22,true)
+                    addCorner(value209)
+                    addStroke(value209)
+                    addPadding(value209,14,14,12,14)
+                    createLabel{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,Text=entry37.Content,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,TextWrapped=true,TextTruncate=Enum.TextTruncate.None,TextYAlignment=Enum.TextYAlignment.Top,Parent=value209}
                 end
                 if type(entry37.Entries)=="table"then
                     for index39,entry38 in ipairs(entry37.Entries)do
-                        local value211=createInstance(text20,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundColor3=nativeTheme2.Surface2,BorderSizePixel=0,LayoutOrder=index39,Parent=value209})
-                        value211:SetAttribute(text22,true)
-                        addCorner(value211)
-                        addStroke(value211)
-                        addPadding(value211,14,14,12,14)
-                        createInstance(text21,{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,4),Parent=value211})
-                        local value212=createInstance(text20,{Size=UDim2.new(1,0,0,18),BackgroundTransparency=1,LayoutOrder=1,Parent=value211})
-                        createLabel{Size=UDim2.new(1,-70,1,0),Text=entry38.Title or entry38.Version or"Update",TextSize=14,Parent=value212}
+                        local value210=createInstance(text20,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundColor3=nativeTheme2.Surface2,BorderSizePixel=0,LayoutOrder=index39,Parent=value208})
+                        value210:SetAttribute(text22,true)
+                        addCorner(value210)
+                        addStroke(value210)
+                        addPadding(value210,14,14,12,14)
+                        createInstance(text21,{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,4),Parent=value210})
+                        local value211=createInstance(text20,{Size=UDim2.new(1,0,0,18),BackgroundTransparency=1,LayoutOrder=1,Parent=value210})
+                        createLabel{Size=UDim2.new(1,-70,1,0),Text=entry38.Title or entry38.Version or"Update",TextSize=14,Parent=value211}
                         if entry38.Date or entry38.Tag then
-                            local value213=createInstance(text20,{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,0,.5,0),Size=UDim2.fromOffset(0,20),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value212})
-                            addCorner(value213,UDim.new(0,5))
-                            addStroke(value213)
-                            addPadding(value213,8,8)
-                            createLabel{Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,Text=entry38.Tag or entry38.Date,TextSize=11,TextColor3=nativeTheme2.Muted,TextTruncate=Enum.TextTruncate.None,Parent=value213}
+                            local value212=createInstance(text20,{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,0,.5,0),Size=UDim2.fromOffset(0,20),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=nativeTheme2.Surface,BorderSizePixel=0,Parent=value211})
+                            addCorner(value212,UDim.new(0,5))
+                            addStroke(value212)
+                            addPadding(value212,8,8)
+                            createLabel{Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,Text=entry38.Tag or entry38.Date,TextSize=11,TextColor3=nativeTheme2.Muted,TextTruncate=Enum.TextTruncate.None,Parent=value212}
                         end
-                        local value214=entry38.Content or entry38.Body
+                        local value213=entry38.Content or entry38.Body
                         if type(entry38.Changes)=="table"then
-                            value214="• "..table.concat(entry38.Changes,"\n• ")
+                            value213="• "..table.concat(entry38.Changes,"\n• ")
                         end
-                        if value214 then
-                            createLabel{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,Text=value214,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,TextWrapped=true,TextTruncate=Enum.TextTruncate.None,TextYAlignment=Enum.TextYAlignment.Top,LayoutOrder=2,Parent=value211}
+                        if value213 then
+                            createLabel{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,Text=value213,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,TextWrapped=true,TextTruncate=Enum.TextTruncate.None,TextYAlignment=Enum.TextYAlignment.Top,LayoutOrder=2,Parent=value210}
                         end
                     end
                 end
                 if type(entry37.Build)=="function"then
-                    invokeCallback(entry37.Build,value209)
-                    for index40,entry39 in ipairs(value209:GetChildren())do
+                    invokeCallback(entry37.Build,value208)
+                    for index40,entry39 in ipairs(value208:GetChildren())do
                         if entry39:IsA"GuiObject"then
                             entry39:SetAttribute(text22,true)
                         end
                     end
                 end
-                table.insert(entries24,{Title=entry37.Name or entry37.Title or"Page",Icon=entry37.Icon,Frame=value209})
+                table.insert(entries24,{Title=entry37.Name or entry37.Title or"Page",Icon=entry37.Icon,Frame=value208})
             end
             local entries26={}
-            local function callback47(configuration126,argument61)
-                local value215=self._homeIndex~=configuration126
-                self._homeIndex=configuration126
-                value202.Visible=configuration126==1
-                if configuration126==1 and value215 and not argument61 then
-                    revealHomeContent(value202)
+            local function callback47(configuration125,argument61)
+                local value214=self._homeIndex~=configuration125
+                self._homeIndex=configuration125
+                value201.Visible=configuration125==1
+                if configuration125==1 and value214 and not argument61 then
+                    revealHomeContent(value201)
                 end
                 for index41,entry40 in ipairs(entries24)do
-                    local value216=index41==configuration126
+                    local value215=index41==configuration125
                     local frame17=entry40.Frame
-                    frame17.Visible=value216
-                    if value216 and value215 and not argument61 then
+                    frame17.Visible=value215
+                    if value215 and value214 and not argument61 then
                         for index42,entry41 in ipairs(frame17:GetChildren())do
                             if entry41:IsA"GuiObject"then
                                 revealHomeContent(entry41)
                             end
                         end
                     end
-                    local value217=entries26[index41]
-                    if value217 then
-                        animate(value217.Frame,{BackgroundTransparency=value216 and 0 or 1},.15)
-                        animate(value217.Stroke,{Transparency=value216 and 0 or 1},.15)
-                        animate(value217.Label,{TextColor3=value216 and nativeTheme2.Text or nativeTheme2.Muted},.15)
-                        if value217.Icon then
-                            animate(value217.Icon,{ImageColor3=value216 and nativeTheme2.Accent or nativeTheme2.Muted},.15)
+                    local value216=entries26[index41]
+                    if value216 then
+                        animate(value216.Frame,{BackgroundTransparency=value215 and 0 or 1},.15)
+                        animate(value216.Stroke,{Transparency=value215 and 0 or 1},.15)
+                        animate(value216.Label,{TextColor3=value215 and nativeTheme2.Text or nativeTheme2.Muted},.15)
+                        if value216.Icon then
+                            animate(value216.Icon,{ImageColor3=value215 and nativeTheme2.Accent or nativeTheme2.Muted},.15)
                         end
                     end
                 end
             end
             for index43,entry42 in ipairs(entries24)do
-                local textButton9=createInstance("TextButton",{Size=UDim2.fromOffset(0,32),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=nativeTheme2.Surface2,BackgroundTransparency=1,Text="",AutoButtonColor=false,LayoutOrder=index43,Parent=value199})
+                local textButton9=createInstance("TextButton",{Size=UDim2.fromOffset(0,32),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=nativeTheme2.Surface2,BackgroundTransparency=1,Text="",AutoButtonColor=false,LayoutOrder=index43,Parent=value198})
                 addCorner(textButton9,UDim.new(0,7))
                 local stroke11=addStroke(textButton9,nativeTheme2.Stroke,1)
                 addPadding(textButton9,12,12)
-                local value218
+                local value217
                 if entry42.Icon then
-                    value218=createInstance("ImageLabel",{AnchorPoint=Vector2.new(0,.5),Position=UDim2.new(0,0,.5,0),Size=UDim2.fromOffset(14,14),BackgroundTransparency=1,ImageColor3=nativeTheme2.Muted,ScaleType=Enum.ScaleType.Fit,Parent=textButton9})
-                    applyIcon(value218,entry42.Icon)
+                    value217=createInstance("ImageLabel",{AnchorPoint=Vector2.new(0,.5),Position=UDim2.new(0,0,.5,0),Size=UDim2.fromOffset(14,14),BackgroundTransparency=1,ImageColor3=nativeTheme2.Muted,ScaleType=Enum.ScaleType.Fit,Parent=textButton9})
+                    applyIcon(value217,entry42.Icon)
                 end
-                local textLabel18=createLabel{Position=UDim2.fromOffset(value218 and 20 or 0,0),Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,Text=entry42.Title,TextSize=13,TextColor3=nativeTheme2.Muted,TextTruncate=Enum.TextTruncate.None,Parent=textButton9}
-                entries26[index43]={Frame=textButton9,Stroke=stroke11,Label=textLabel18,Icon=value218}
+                local textLabel18=createLabel{Position=UDim2.fromOffset(value217 and 20 or 0,0),Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,Text=entry42.Title,TextSize=13,TextColor3=nativeTheme2.Muted,TextTruncate=Enum.TextTruncate.None,Parent=textButton9}
+                entries26[index43]={Frame=textButton9,Stroke=stroke11,Label=textLabel18,Icon=value217}
                 textButton9.MouseEnter:Connect(function()
                     if self._homeIndex~=index43 then
                         animate(textButton9,{BackgroundTransparency=.4},.12)
@@ -2801,84 +2798,84 @@ local Airflow = (function()
             end
             callback47(1)
         end
-        value197._order=10
-        self.Home=value197
-        return value197
+        value196._order=10
+        self.Home=value196
+        return value196
     end
-    function NativeWindow:Tab(configuration127,argument62)
-        configuration127=normalizeOptions2(configuration127,{Title="Name",Description="Desc"})
-        if argument62~=nil and configuration127.Icon==nil then
-            configuration127.Icon=argument62
+    function NativeWindow:Tab(configuration126,argument62)
+        configuration126=normalizeOptions2(configuration126,{Title="Name",Description="Desc"})
+        if argument62~=nil and configuration126.Icon==nil then
+            configuration126.Icon=argument62
         end
-        local value219=setmetatable({Name=configuration127.Name or"Tab",Window=self,_order=0,_iconThemed=configuration127.IconThemed~=false},NativeTab)
+        local value218=setmetatable({Name=configuration126.Name or"Tab",Window=self,_order=0,_iconThemed=configuration126.IconThemed~=false},NativeTab)
         local textButton10=createInstance("TextButton",{Size=UDim2.new(1,0,0,38),BackgroundColor3=nativeTheme2.Surface2,BackgroundTransparency=1,Text="",AutoButtonColor=false,LayoutOrder=#self.Tabs+1,Parent=self.TabList})
         addCorner(textButton10)
         local stroke12=addStroke(textButton10,nativeTheme2.Stroke,1)
-        value219._button=textButton10
-        local value220=configuration127.Icon~=nil
-        if value220 then
-            local imageLabel15=createInstance("ImageLabel",{AnchorPoint=Vector2.new(0,.5),Position=UDim2.new(0,12,.5,0),Size=UDim2.fromOffset(16,16),BackgroundTransparency=1,ImageColor3=value219._iconThemed and nativeTheme2.Muted or Color3.new(1,1,1),ScaleType=Enum.ScaleType.Fit,Parent=textButton10})
-            applyIcon(imageLabel15,configuration127.Icon)
-            value219._icon=imageLabel15
+        value218._button=textButton10
+        local value219=configuration126.Icon~=nil
+        if value219 then
+            local imageLabel15=createInstance("ImageLabel",{AnchorPoint=Vector2.new(0,.5),Position=UDim2.new(0,12,.5,0),Size=UDim2.fromOffset(16,16),BackgroundTransparency=1,ImageColor3=value218._iconThemed and nativeTheme2.Muted or Color3.new(1,1,1),ScaleType=Enum.ScaleType.Fit,Parent=textButton10})
+            applyIcon(imageLabel15,configuration126.Icon)
+            value218._icon=imageLabel15
         end
-        value219._label=createLabel{Position=UDim2.fromOffset(value220 and 36 or 14,0),Size=UDim2.new(1,-(value220 and 44 or 22),1,0),Text=value219.Name,TextColor3=nativeTheme2.Muted,Parent=textButton10}
-        local frame18=createInstance("Frame",{Name=value219.Name,Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false,Parent=self.Content})
-        value219._page=frame18
-        createLabel{Position=UDim2.fromOffset(24,20),Size=UDim2.new(1,-72,0,24),Text=value219.Name,TextSize=22,Parent=frame18}
-        if configuration127.Desc then
-            createLabel{Position=UDim2.fromOffset(24,44),Size=UDim2.new(1,-72,0,16),Text=configuration127.Desc,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=frame18}
+        value218._label=createLabel{Position=UDim2.fromOffset(value219 and 36 or 14,0),Size=UDim2.new(1,-(value219 and 44 or 22),1,0),Text=value218.Name,TextColor3=nativeTheme2.Muted,Parent=textButton10}
+        local frame18=createInstance("Frame",{Name=value218.Name,Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false,Parent=self.Content})
+        value218._page=frame18
+        createLabel{Position=UDim2.fromOffset(24,20),Size=UDim2.new(1,-72,0,24),Text=value218.Name,TextSize=22,Parent=frame18}
+        if configuration126.Desc then
+            createLabel{Position=UDim2.fromOffset(24,44),Size=UDim2.new(1,-72,0,16),Text=configuration126.Desc,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=frame18}
         end
-        local value221=configuration127.Desc and 70 or 58
-        local scrollingFrame2=createInstance("ScrollingFrame",{Position=UDim2.fromOffset(0,value221),Size=UDim2.new(1,0,1,-value221),BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=2,ScrollBarImageColor3=nativeTheme2.Accent,ScrollBarImageTransparency=.5,AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),Parent=frame18})
+        local value220=configuration126.Desc and 70 or 58
+        local scrollingFrame2=createInstance("ScrollingFrame",{Position=UDim2.fromOffset(0,value220),Size=UDim2.new(1,0,1,-value220),BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=2,ScrollBarImageColor3=nativeTheme2.Accent,ScrollBarImageTransparency=.5,AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),Parent=frame18})
         addPadding(scrollingFrame2,24,24,2,24)
         createInstance("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,8),Parent=scrollingFrame2})
-        value219.List=scrollingFrame2
-        local value222,count5=createEmptyPage(frame18,configuration127.Icon or"layout-grid",configuration127.EmptyText or"Nothing here yet"),0
-        scrollingFrame2.ChildAdded:Connect(function(configuration128)
-            if configuration128:IsA"GuiObject"then
+        value218.List=scrollingFrame2
+        local value221,count5=createEmptyPage(frame18,configuration126.Icon or"layout-grid",configuration126.EmptyText or"Nothing here yet"),0
+        scrollingFrame2.ChildAdded:Connect(function(configuration127)
+            if configuration127:IsA"GuiObject"then
                 count5+=1
-                value222.Visible=false
+                value221.Visible=false
             end
         end)
-        scrollingFrame2.ChildRemoved:Connect(function(configuration129)
-            if configuration129:IsA"GuiObject"then
+        scrollingFrame2.ChildRemoved:Connect(function(configuration128)
+            if configuration128:IsA"GuiObject"then
                 count5=math.max(count5-1,0)
-                value222.Visible=count5<=0
+                value221.Visible=count5<=0
             end
         end)
-        value222.Visible=true
+        value221.Visible=true
         textButton10.MouseEnter:Connect(function()
-            if self.CurrentTab~=value219 then
+            if self.CurrentTab~=value218 then
                 animate(textButton10,{BackgroundTransparency=.4},.12)
                 animate(stroke12,{Transparency=.5},.12)
             end
         end)
         textButton10.MouseLeave:Connect(function()
-            if self.CurrentTab~=value219 then
+            if self.CurrentTab~=value218 then
                 animate(textButton10,{BackgroundTransparency=1},.2)
                 animate(stroke12,{Transparency=1},.2)
             end
         end)
         textButton10.MouseButton1Click:Connect(function()
-            self:SelectTab(value219)
+            self:SelectTab(value218)
         end)
-        value219._stroke=stroke12
+        value218._stroke=stroke12
         if not self._introDone then
             textButton10.Visible=false
         end
-        table.insert(self.Tabs,value219)
+        table.insert(self.Tabs,value218)
         if#self.Tabs==1 then
             task.defer(function()
-                self:SelectTab(value219)
+                self:SelectTab(value218)
             end)
         end
-        return value219
+        return value218
     end
     NativeWindow.CreateTab=NativeWindow.Tab
-    function NativeWindow:Dialog(configuration130)
+    function NativeWindow:Dialog(configuration129)
         local useDefaultButtonStyle=NativeLibrary.ThemeName=="Mono"
         local text24="TextTransparency"
-        configuration130=normalizeOptions2(configuration130,{Text="Content",Message="Content"})
+        configuration129=normalizeOptions2(configuration129,{Text="Content",Message="Content"})
         if self._dialog then
             self._dialog.Close()
         end
@@ -2887,31 +2884,31 @@ local Airflow = (function()
         local frame19=createInstance("Frame",{AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(.5,0,.5,10),Size=UDim2.fromOffset(300,120),BackgroundColor3=nativeTheme2.Background,BackgroundTransparency=1,BorderSizePixel=0,ZIndex=41,Parent=textButton11})
         addCorner(frame19,UDim.new(0,16))
         local stroke13=addStroke(frame19,nativeTheme2.Stroke,1)
-        local value223=createInstance("UIScale",{Scale=.94,Parent=frame19})
+        local value222=createInstance("UIScale",{Scale=.94,Parent=frame19})
         local entries27,count7={},0
-        if configuration130.Icon then
-            local iconContainer,iconImage=createIcon(frame19,configuration130.Icon,nativeTheme2.Accent,UDim2.new(0,count6,0,count6+9))
+        if configuration129.Icon then
+            local iconContainer,iconImage=createIcon(frame19,configuration129.Icon,nativeTheme2.Accent,UDim2.new(0,count6,0,count6+9))
             iconImage.ImageTransparency=1
             iconContainer.ZIndex=42
             iconImage.ZIndex=42
             table.insert(entries27,{iconImage,"ImageTransparency",0})
             count7=24
         end
-        local textLabel19=createLabel{Position=UDim2.fromOffset(count6+count7,count6),Size=UDim2.new(1,-(count6*2+count7),0,18),Text=configuration130.Title or"Are you sure?",TextSize=15,TextTransparency=1,ZIndex=42,Parent=frame19}
+        local textLabel19=createLabel{Position=UDim2.fromOffset(count6+count7,count6),Size=UDim2.new(1,-(count6*2+count7),0,18),Text=configuration129.Title or"Are you sure?",TextSize=15,TextTransparency=1,ZIndex=42,Parent=frame19}
         table.insert(entries27,{textLabel19,text24,0})
         local count8=0
-        if configuration130.Content then
-            local textLabel20=createLabel{Position=UDim2.fromOffset(count6,count6+24),Size=UDim2.new(1,-count6*2,0,0),AutomaticSize=Enum.AutomaticSize.Y,Text=configuration130.Content,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,TextWrapped=true,TextTransparency=1,TextTruncate=Enum.TextTruncate.None,TextYAlignment=Enum.TextYAlignment.Top,ZIndex=42,Parent=frame19}
+        if configuration129.Content then
+            local textLabel20=createLabel{Position=UDim2.fromOffset(count6,count6+24),Size=UDim2.new(1,-count6*2,0,0),AutomaticSize=Enum.AutomaticSize.Y,Text=configuration129.Content,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,TextWrapped=true,TextTransparency=1,TextTruncate=Enum.TextTruncate.None,TextYAlignment=Enum.TextYAlignment.Top,ZIndex=42,Parent=frame19}
             table.insert(entries27,{textLabel20,text24,0})
             count8=math.max(textLabel20.TextBounds.Y,16)+6
             textLabel20:GetPropertyChangedSignal"TextBounds":Connect(function()
-                local value224=math.max(textLabel20.TextBounds.Y,16)+6
-                if value224~=count8 then
-                    count8=value224
+                local value223=math.max(textLabel20.TextBounds.Y,16)+6
+                if value223~=count8 then
+                    count8=value223
                     frame19.Size=UDim2.fromOffset(300,count6+24+count8+12+34+count6)
-                    local value225=frame19:FindFirstChild"ButtonRow"
-                    if value225 then
-                        value225.Position=UDim2.fromOffset(count6,count6+24+count8+12)
+                    local value224=frame19:FindFirstChild"ButtonRow"
+                    if value224 then
+                        value224.Position=UDim2.fromOffset(count6,count6+24+count8+12)
                     end
                 end
             end)
@@ -2930,7 +2927,7 @@ local Airflow = (function()
             end
             animate(textButton11,{BackgroundTransparency=1},.18)
             animate(frame19,{BackgroundTransparency=1,Position=UDim2.new(.5,0,.5,8)},.18,Enum.EasingStyle.Quint)
-            animate(value223,{Scale=.96},.18,Enum.EasingStyle.Quint)
+            animate(value222,{Scale=.96},.18,Enum.EasingStyle.Quint)
             animate(stroke13,{Transparency=1},.12)
             for index44,entry43 in ipairs(entries27)do
                 animate(entry43[1],{[entry43[2]]=1},.12)
@@ -2939,23 +2936,23 @@ local Airflow = (function()
                 textButton11:Destroy()
             end)
         end
-        for index45,entry44 in ipairs(configuration130.Buttons or{})do
-            local value226=entry44.Variant=="Primary"and not useDefaultButtonStyle
-            local textButton12=createInstance("TextButton",{Size=UDim2.fromOffset(0,34),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=value226 and nativeTheme2.Accent or nativeTheme2.Surface2,BackgroundTransparency=1,BorderSizePixel=0,Text="",AutoButtonColor=false,ClipsDescendants=true,LayoutOrder=index45,ZIndex=43,Parent=frame20})
+        for index45,entry44 in ipairs(configuration129.Buttons or{})do
+            local value225=entry44.Variant=="Primary"and not useDefaultButtonStyle
+            local textButton12=createInstance("TextButton",{Size=UDim2.fromOffset(0,34),AutomaticSize=Enum.AutomaticSize.X,BackgroundColor3=value225 and nativeTheme2.Accent or nativeTheme2.Surface2,BackgroundTransparency=1,BorderSizePixel=0,Text="",AutoButtonColor=false,ClipsDescendants=true,LayoutOrder=index45,ZIndex=43,Parent=frame20})
             addCorner(textButton12,UDim.new(0,7))
-            local stroke14=addStroke(textButton12,value226 and nativeTheme2.Accent or nativeTheme2.Stroke,1)
+            local stroke14=addStroke(textButton12,value225 and nativeTheme2.Accent or nativeTheme2.Stroke,1)
             addPadding(textButton12,14,14)
-            local textLabel21=createLabel{Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,Text=entry44.Title or entry44.Name or"OK",TextSize=13,TextColor3=value226 and nativeTheme2.AccentDark or nativeTheme2.Text,TextXAlignment=Enum.TextXAlignment.Center,TextTransparency=1,ZIndex=44,Parent=textButton12}
-            local value227=value226 and.12 or 0
-            local value228=value226 and.4 or 0
-            table.insert(entries27,{textButton12,"BackgroundTransparency",value227})
-            table.insert(entries27,{stroke14,"Transparency",value228})
+            local textLabel21=createLabel{Size=UDim2.new(0,0,1,0),AutomaticSize=Enum.AutomaticSize.X,Text=entry44.Title or entry44.Name or"OK",TextSize=13,TextColor3=value225 and nativeTheme2.AccentDark or nativeTheme2.Text,TextXAlignment=Enum.TextXAlignment.Center,TextTransparency=1,ZIndex=44,Parent=textButton12}
+            local value226=value225 and.12 or 0
+            local value227=value225 and.4 or 0
+            table.insert(entries27,{textButton12,"BackgroundTransparency",value226})
+            table.insert(entries27,{stroke14,"Transparency",value227})
             table.insert(entries27,{textLabel21,text24,0})
             textButton12.MouseEnter:Connect(function()
                 if enabled15 then
                     return
                 end
-                if value226 then
+                if value225 then
                     animate(textButton12,{BackgroundTransparency=0},.12)
                     animate(stroke14,{Transparency=0},.12)
                 else
@@ -2966,9 +2963,9 @@ local Airflow = (function()
                 if enabled15 then
                     return
                 end
-                if value226 then
-                    animate(textButton12,{BackgroundTransparency=value227},.2)
-                    animate(stroke14,{Transparency=value228},.2)
+                if value225 then
+                    animate(textButton12,{BackgroundTransparency=value226},.2)
+                    animate(stroke14,{Transparency=value227},.2)
                 else
                     animate(stroke14,{Color=nativeTheme2.Stroke},.2)
                 end
@@ -2978,33 +2975,33 @@ local Airflow = (function()
                 invokeCallback(entry44.Callback)
             end)
         end
-        if configuration130.CloseOnBackdrop~=false then
+        if configuration129.CloseOnBackdrop~=false then
             textButton11.MouseButton1Click:Connect(function()
                 entries28.Close()
-                invokeCallback(configuration130.OnCancel)
+                invokeCallback(configuration129.OnCancel)
             end)
         end
         self._dialog=entries28
         animate(textButton11,{BackgroundTransparency=.45},.25)
         animate(frame19,{BackgroundTransparency=0,Position=UDim2.fromScale(.5,.5)},.3,Enum.EasingStyle.Quint)
         animate(stroke13,{Transparency=0},.25)
-        animate(value223,{Scale=1},.4,Enum.EasingStyle.Back)
+        animate(value222,{Scale=1},.4,Enum.EasingStyle.Back)
         for index46,entry45 in ipairs(entries27)do
             animate(entry45[1],{[entry45[2]]=entry45[3]},.25)
         end
         return entries28
     end
-    function NativeWindow:Confirm(configuration131)
-        configuration131=normalizeOptions2(configuration131,{Text="Content",Message="Content"})
-        return self:Dialog{Title=configuration131.Title or"Are you sure?",Content=configuration131.Content,Icon=configuration131.Icon,OnCancel=configuration131.OnCancel,Buttons={{Title=configuration131.CancelText or"Cancel",Callback=configuration131.OnCancel},{Title=configuration131.ConfirmText or"Confirm",Variant="Primary",Callback=configuration131.Callback}}}
+    function NativeWindow:Confirm(configuration130)
+        configuration130=normalizeOptions2(configuration130,{Text="Content",Message="Content"})
+        return self:Dialog{Title=configuration130.Title or"Are you sure?",Content=configuration130.Content,Icon=configuration130.Icon,OnCancel=configuration130.OnCancel,Buttons={{Title=configuration130.CancelText or"Cancel",Callback=configuration130.OnCancel},{Title=configuration130.ConfirmText or"Confirm",Variant="Primary",Callback=configuration130.Callback}}}
     end
-    function NativeWindow:_listen(configuration132,argument63,argument64)
-        local value229=self._inputListeners[configuration132]
-        table.insert(value229,argument63)
+    function NativeWindow:_listen(configuration131,argument63,argument64)
+        local value228=self._inputListeners[configuration131]
+        table.insert(value228,argument63)
         local function callback48()
-            for index47,entry46 in ipairs(value229)do
+            for index47,entry46 in ipairs(value228)do
                 if entry46==argument63 then
-                    table.remove(value229,index47)
+                    table.remove(value228,index47)
                     break
                 end
             end
@@ -3015,30 +3012,30 @@ local Airflow = (function()
         end
         return callback48
     end
-    function NativeWindow:_indicatorY(configuration133)
+    function NativeWindow:_indicatorY(configuration132)
         local tabList=self.TabList
-        local scale2=self.Scale.Scale
-        return(configuration133._button.AbsolutePosition.Y-tabList.AbsolutePosition.Y+configuration133._button.AbsoluteSize.Y/2)/scale2+tabList.Position.Y.Offset
+        local scale3=self.Scale.Scale
+        return(configuration132._button.AbsolutePosition.Y-tabList.AbsolutePosition.Y+configuration132._button.AbsoluteSize.Y/2)/scale3+tabList.Position.Y.Offset
     end
-    function NativeWindow:_placeIndicator(configuration134)
+    function NativeWindow:_placeIndicator(configuration133)
         local indicator2=self.Indicator
-        local value230=self:_indicatorY(configuration134)
+        local value229=self:_indicatorY(configuration133)
         if not indicator2.Visible then
             indicator2.Visible=true
-            indicator2.Position=UDim2.fromOffset(6,value230)
+            indicator2.Position=UDim2.fromOffset(6,value229)
             indicator2.Size=UDim2.fromOffset(3,0)
         end
-        animate(indicator2,{Position=UDim2.fromOffset(6,value230),Size=UDim2.fromOffset(3,18)},.35,Enum.EasingStyle.Back)
+        animate(indicator2,{Position=UDim2.fromOffset(6,value229),Size=UDim2.fromOffset(3,18)},.35,Enum.EasingStyle.Back)
     end
-    function NativeWindow:SelectTab(configuration135)
-        if self.CurrentTab==configuration135 then
+    function NativeWindow:SelectTab(configuration134)
+        if self.CurrentTab==configuration134 then
             return
         end
         local currentTab=self.CurrentTab
-        self.CurrentTab=configuration135
+        self.CurrentTab=configuration134
         self:_settleTransition()
-        local value231=(self._transitionGeneration or 0)+1
-        self._transitionGeneration=value231
+        local value230=(self._transitionGeneration or 0)+1
+        self._transitionGeneration=value230
         if currentTab then
             animate(currentTab._button,{BackgroundTransparency=1},.2)
             animate(currentTab._stroke,{Transparency=1},.2)
@@ -3054,26 +3051,26 @@ local Airflow = (function()
             _outLayer.Visible=true
             animate(_outLayer,{GroupTransparency=1,Position=UDim2.fromOffset(0,-10)},.18)
             task.delay(.18,function()
-                if self._transitionGeneration==value231 then
+                if self._transitionGeneration==value230 then
                     self:_settleOut()
                 end
             end)
         end
-        animate(configuration135._button,{BackgroundTransparency=0},.2)
-        animate(configuration135._stroke,{Transparency=0},.2)
-        animate(configuration135._label,{TextColor3=nativeTheme2.Text},.2)
-        if configuration135._icon and configuration135._iconThemed then
-            animate(configuration135._icon,{ImageColor3=nativeTheme2.Accent},.2)
+        animate(configuration134._button,{BackgroundTransparency=0},.2)
+        animate(configuration134._stroke,{Transparency=0},.2)
+        animate(configuration134._label,{TextColor3=nativeTheme2.Text},.2)
+        if configuration134._icon and configuration134._iconThemed then
+            animate(configuration134._icon,{ImageColor3=nativeTheme2.Accent},.2)
         end
-        self:_placeIndicator(configuration135)
-        local _page=configuration135._page
+        self:_placeIndicator(configuration134)
+        local _page=configuration134._page
         _page.Position=UDim2.fromOffset(0,0)
         _page.Visible=true
         _page.Parent=self._inLayer
         self._inPage=_page
         revealPage(self._inLayer)
         task.delay(.32,function()
-            if self._transitionGeneration==value231 then
+            if self._transitionGeneration==value230 then
                 self:_settleIn()
             end
         end)
@@ -3100,18 +3097,18 @@ local Airflow = (function()
         self:_settleOut()
         self:_settleIn()
     end
-    function NativeWindow:Toggle(configuration136)
+    function NativeWindow:Toggle(configuration135)
         if not self._introDone then
             return
         end
-        if configuration136==nil then
-            configuration136=not self.Open
+        if configuration135==nil then
+            configuration135=not self.Open
         end
-        if configuration136==self.Open then
+        if configuration135==self.Open then
             return
         end
-        self.Open=configuration136
-        if configuration136 then
+        self.Open=configuration135
+        if configuration135 then
             self.Root.Visible=true
             animate(self.Scale,{Scale=self._fitScale or 1},.4,Enum.EasingStyle.Back)
             animate(self.Body,{GroupTransparency=0},.25)
@@ -3129,61 +3126,61 @@ local Airflow = (function()
             end)
         end
     end
-    function NativeWindow:SetKeepOnScreen(configuration137)
-        self.KeepOnScreen=configuration137~=false
+    function NativeWindow:SetKeepOnScreen(configuration136)
+        self.KeepOnScreen=configuration136~=false
         if self.KeepOnScreen then
             self:_clampToScreen()
         end
     end
-    function NativeWindow:SetKeybind(configuration138)
-        self.Keybind=configuration138
-        self._keyChipLabel.Text=formatKeyName(configuration138)
+    function NativeWindow:SetKeybind(configuration137)
+        self.Keybind=configuration137
+        self._keyChipLabel.Text=formatKeyName(configuration137)
     end
-    function NativeWindow:Notify(configuration139)
+    function NativeWindow:Notify(configuration138)
         local text25="Frame"
-        configuration139=normalizeOptions2(configuration139,{Text="Content",Message="Content",Image="Icon"})
-        local value232=configuration139.Duration or 4
-        local value233=notificationColors[configuration139.Type]or nativeTheme2.Text
+        configuration138=normalizeOptions2(configuration138,{Text="Content",Message="Content",Image="Icon"})
+        local value231=configuration138.Duration or 4
+        local value232=notificationColors[configuration138.Type]or nativeTheme2.Text
         self._notifyOrder+=1
-        local value234=createInstance(text25,{Size=UDim2.new(1,0,0,0),BackgroundTransparency=1,LayoutOrder=self._notifyOrder,Parent=self.NotifyHolder})
-        local value235=createInstance(text25,{Position=UDim2.fromOffset(320,0),Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1,Parent=value234})
-        local imageLabel16=createInstance("ImageLabel",{Position=UDim2.fromOffset(-20,-20),Size=UDim2.new(1,40,1,40),BackgroundTransparency=1,Image=nativeAssets.Shadow,ImageColor3=Color3.new(0,0,0),ImageTransparency=1,ScaleType=Enum.ScaleType.Slice,SliceCenter=Rect.new(49,49,450,450),ZIndex=0,Parent=value235})
-        local canvasGroup2=createInstance("CanvasGroup",{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundColor3=nativeTheme2.Background,BorderSizePixel=0,GroupTransparency=1,Parent=value235})
+        local value233=createInstance(text25,{Size=UDim2.new(1,0,0,0),BackgroundTransparency=1,LayoutOrder=self._notifyOrder,Parent=self.NotifyHolder})
+        local value234=createInstance(text25,{Position=UDim2.fromOffset(320,0),Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1,Parent=value233})
+        local imageLabel16=createInstance("ImageLabel",{Position=UDim2.fromOffset(-20,-20),Size=UDim2.new(1,40,1,40),BackgroundTransparency=1,Image=nativeAssets.Shadow,ImageColor3=Color3.new(0,0,0),ImageTransparency=1,ScaleType=Enum.ScaleType.Slice,SliceCenter=Rect.new(49,49,450,450),ZIndex=0,Parent=value234})
+        local canvasGroup2=createInstance("CanvasGroup",{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundColor3=nativeTheme2.Background,BorderSizePixel=0,GroupTransparency=1,Parent=value234})
         addCorner(canvasGroup2,UDim.new(0,10))
         local stroke15=addStroke(canvasGroup2,nativeTheme2.Stroke)
         addEdgeHighlight(canvasGroup2)
         addGlow(canvasGroup2,UDim2.fromOffset(260,120),UDim2.new(1,-10,0,-10),.86,90)
-        local value236=createInstance(text25,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1,Parent=canvasGroup2})
-        addPadding(value236,16,16,14,24)
+        local value235=createInstance(text25,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1,Parent=canvasGroup2})
+        addPadding(value235,16,16,14,24)
         local count9=0
-        if configuration139.Icon then
-            createIcon(value236,configuration139.Icon,value233==nativeTheme2.Text and nativeTheme2.Accent or value233,UDim2.new(0,0,0,8))
+        if configuration138.Icon then
+            createIcon(value235,configuration138.Icon,value232==nativeTheme2.Text and nativeTheme2.Accent or value232,UDim2.new(0,0,0,8))
             count9=24
         end
-        createLabel{Position=UDim2.fromOffset(count9,0),Size=UDim2.new(1,-28-count9,0,16),Text=configuration139.Title or"Notification",TextSize=14,TextColor3=value233,Parent=value236}
-        local textButton13=createInstance("TextButton",{AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,6,0,-5),Size=UDim2.fromOffset(24,24),BackgroundTransparency=1,Text="×",TextColor3=nativeTheme2.Muted,TextSize=22,FontFace=nativeFonts.Bold,AutoButtonColor=false,Parent=value236})
+        createLabel{Position=UDim2.fromOffset(count9,0),Size=UDim2.new(1,-28-count9,0,16),Text=configuration138.Title or"Notification",TextSize=14,TextColor3=value232,Parent=value235}
+        local textButton13=createInstance("TextButton",{AnchorPoint=Vector2.new(1,0),Position=UDim2.new(1,6,0,-5),Size=UDim2.fromOffset(24,24),BackgroundTransparency=1,Text="×",TextColor3=nativeTheme2.Muted,TextSize=22,FontFace=nativeFonts.Bold,AutoButtonColor=false,Parent=value235})
         textButton13.MouseEnter:Connect(function()
             animate(textButton13,{TextColor3=nativeTheme2.Text},.15)
         end)
         textButton13.MouseLeave:Connect(function()
             animate(textButton13,{TextColor3=nativeTheme2.Muted},.2)
         end)
-        if configuration139.Content then
-            createLabel{Position=UDim2.fromOffset(count9,21),Size=UDim2.new(1,-count9,0,0),AutomaticSize=Enum.AutomaticSize.Y,Text=configuration139.Content,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,TextWrapped=true,TextTruncate=Enum.TextTruncate.None,TextYAlignment=Enum.TextYAlignment.Top,Parent=value236}
+        if configuration138.Content then
+            createLabel{Position=UDim2.fromOffset(count9,21),Size=UDim2.new(1,-count9,0,0),AutomaticSize=Enum.AutomaticSize.Y,Text=configuration138.Content,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,TextWrapped=true,TextTruncate=Enum.TextTruncate.None,TextYAlignment=Enum.TextYAlignment.Top,Parent=value235}
         end
-        local value237=createInstance(text25,{AnchorPoint=Vector2.new(0,1),Position=UDim2.new(0,16,1,-8),Size=UDim2.new(1,-32,0,3),BackgroundColor3=nativeTheme2.Surface3,BorderSizePixel=0,Parent=canvasGroup2})
+        local value236=createInstance(text25,{AnchorPoint=Vector2.new(0,1),Position=UDim2.new(0,16,1,-8),Size=UDim2.new(1,-32,0,3),BackgroundColor3=nativeTheme2.Surface3,BorderSizePixel=0,Parent=canvasGroup2})
+        addCorner(value236,UDim.new(1,0))
+        local value237=createInstance(text25,{Size=UDim2.fromScale(1,1),BackgroundColor3=nativeTheme2.Accent,BorderSizePixel=0,Parent=value236})
         addCorner(value237,UDim.new(1,0))
-        local value238=createInstance(text25,{Size=UDim2.fromScale(1,1),BackgroundColor3=nativeTheme2.Accent,BorderSizePixel=0,Parent=value237})
-        addCorner(value238,UDim.new(1,0))
         task.defer(function()
-            if value234.Parent then
-                animate(value234,{Size=UDim2.new(1,0,0,canvasGroup2.AbsoluteSize.Y)},.3,Enum.EasingStyle.Quint)
+            if value233.Parent then
+                animate(value233,{Size=UDim2.new(1,0,0,canvasGroup2.AbsoluteSize.Y)},.3,Enum.EasingStyle.Quint)
             end
         end)
-        animate(value235,{Position=UDim2.fromOffset(0,0)},.5,Enum.EasingStyle.Back)
+        animate(value234,{Position=UDim2.fromOffset(0,0)},.5,Enum.EasingStyle.Back)
         animate(canvasGroup2,{GroupTransparency=0},.3)
         animate(imageLabel16,{ImageTransparency=.6},.4)
-        animate(value238,{Size=UDim2.fromScale(0,1)},value232,Enum.EasingStyle.Linear)
+        animate(value237,{Size=UDim2.fromScale(0,1)},value231,Enum.EasingStyle.Linear)
         local enabled16=false
         local function callback49()
             if enabled16 then
@@ -3196,24 +3193,24 @@ local Airflow = (function()
                     break
                 end
             end
-            animate(value235,{Position=UDim2.fromOffset(320,0)},.3,Enum.EasingStyle.Quint)
+            animate(value234,{Position=UDim2.fromOffset(320,0)},.3,Enum.EasingStyle.Quint)
             animate(canvasGroup2,{GroupTransparency=1},.2)
             animate(stroke15,{Transparency=1},.15)
             animate(imageLabel16,{ImageTransparency=1},.2)
             task.delay(.22,function()
-                value234.ClipsDescendants=true
-                animate(value234,{Size=UDim2.new(1,0,0,-4)},.22,Enum.EasingStyle.Quint)
+                value233.ClipsDescendants=true
+                animate(value233,{Size=UDim2.new(1,0,0,-4)},.22,Enum.EasingStyle.Quint)
                 task.delay(.24,function()
-                    value234:Destroy()
+                    value233:Destroy()
                 end)
             end)
         end
-        task.delay(value232,callback49)
+        task.delay(value231,callback49)
         textButton13.MouseButton1Click:Connect(callback49)
         table.insert(self._toasts,callback49)
         while#self._toasts>self.MaxNotifications do
-            local value239=table.remove(self._toasts,1)
-            value239()
+            local value238=table.remove(self._toasts,1)
+            value238()
         end
         return{Dismiss=callback49}
     end
@@ -3650,10 +3647,10 @@ local AdapterFactory = (function()
                 local entry = handle._options[label]
                 local detail = type(entry) == "table" and (entry.Desc or entry.Description) or nil
                 local icon = type(entry) == "table" and entry.Icon or nil
-                local value240 = icon and 36 or 12
+                local value239 = icon and 36 or 12
                 row.Label.RichText = true
-                row.Label.Position = UDim2.fromOffset(value240, detail and 8 or -1)
-                row.Label.Size = detail and UDim2.new(1, -value240 - 28, 0, 17) or UDim2.new(1, -value240 - 28, 1, 0)
+                row.Label.Position = UDim2.fromOffset(value239, detail and 8 or -1)
+                row.Label.Size = detail and UDim2.new(1, -value239 - 28, 0, 17) or UDim2.new(1, -value239 - 28, 1, 0)
                 local image = row.Frame:FindFirstChild("UIOptionIcon")
                 if icon then
                     image = image or new("ImageLabel", {
@@ -3679,8 +3676,8 @@ local AdapterFactory = (function()
                     TextYAlignment = Enum.TextYAlignment.Top, Parent = row.Frame,
                 })
                     description.Text = tostring(detail)
-                    description.Position = UDim2.fromOffset(value240, 28)
-                    description.Size = UDim2.new(1, -value240 - 28, 0, 30)
+                    description.Position = UDim2.fromOffset(value239, 28)
+                    description.Size = UDim2.new(1, -value239 - 28, 0, 30)
                     row.Frame.Size = UDim2.new(1, 0, 0, Airflow.Touch and 64 or 60)
                     row.Check.Position = UDim2.new(1, -10, 0, 18)
                 else
@@ -4022,11 +4019,13 @@ local AdapterFactory = (function()
                     holder.AnchorPoint = Vector2.zero
                     holder.Position = UDim2.fromOffset(14, config.Desc and 65 or 42)
                     holder.Size = UDim2.new(1, -28, 1, config.Desc and -79 or -56)
+                    box.AnchorPoint = Vector2.zero
                     box.Size = UDim2.new(1, -16, 1, -12)
                     box.Position = UDim2.fromOffset(8, 6)
                     box.MultiLine = true
                     box.TextWrapped = true
                     box.TextYAlignment = Enum.TextYAlignment.Top
+                    box.TextXAlignment = Enum.TextXAlignment.Left
                     if handle.UIElements.Title then
                         handle.UIElements.Title.Position = UDim2.fromOffset(14, 12);
                         handle.UIElements.Title.Size = UDim2.new(1, -28, 0, 18)
@@ -4597,11 +4596,11 @@ local AdapterFactory = (function()
                 colors[#colors + 1] = ColorSequenceKeypoint.new(time, typeof(hex) == "Color3" and hex or Color3.fromHex(hex))
                 transparencies[#transparencies + 1] = NumberSequenceKeypoint.new(time, opacity or 0)
             end
-            table.sort(colors, function(configuration140, argument65)
-                return configuration140.Time < argument65.Time
+            table.sort(colors, function(configuration139, argument65)
+                return configuration139.Time < argument65.Time
             end)
-            table.sort(transparencies, function(configuration141, argument66)
-                return configuration141.Time < argument66.Time
+            table.sort(transparencies, function(configuration140, argument66)
+                return configuration140.Time < argument66.Time
             end)
             if #colors == 1 then
                 colors[#colors + 1] = ColorSequenceKeypoint.new(1, colors[1].Value)
