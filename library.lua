@@ -2016,45 +2016,65 @@ local Airflow = (function()
         return false
     end
     function NativeWindow:_enableDrag()
-        local enabled11=false
-        local zero=Vector2.zero
-        local value165
-        local function callback43()
+        local activeInput, startPointer, pointerOffset
+        local dragging=false
+        local function rootPosition()
             local root=self.Root
             return root.AbsolutePosition+root.AbsoluteSize*root.AnchorPoint-self.Gui.AbsolutePosition
         end
-        table.insert(self._connections,UserInputService.InputBegan:Connect(function(configuration96)
-            if not isPrimaryInput(configuration96)then
-                return
+        local function pointerPosition(input)
+            if input.UserInputType==Enum.UserInputType.Touch then
+                return Vector2.new(input.Position.X,input.Position.Y)
             end
-            if not self.Open or not self.Root.Visible then
-                return
+            return getPointerPosition()
+        end
+        local function stopDrag(clamp)
+            local moved=dragging
+            activeInput, startPointer, pointerOffset=nil,nil,nil
+            dragging=false
+            if clamp and moved and not self._destroyed then self:_clampToScreen() end
+        end
+        table.insert(self._connections,UserInputService.InputBegan:Connect(function(input,processed)
+            if activeInput or processed or not isPrimaryInput(input) then return end
+            if self._destroyed or not self.Open or not self.Gui.Enabled or not self.Root.Visible then return end
+            if UserInputService:GetFocusedTextBox() then return end
+            local pointer=pointerPosition(input)
+            if not containsPoint(pointer,self.Body) or self:_overControl(pointer) then return end
+            if input.UserInputType==Enum.UserInputType.Touch then
+                local overHandle=false
+                for _,handle in ipairs(self.DragHandles or {}) do
+                    if handle.Parent and handle.Visible and containsPoint(pointer,handle) then
+                        overHandle=true
+                        break
+                    end
+                end
+                if not overHandle then return end
             end
-            local pointerPosition3=getPointerPosition()
-            if not containsPoint(pointerPosition3,self.Body)or self:_overControl(pointerPosition3)then
-                return
-            end
-            enabled11=true
-            zero=pointerPosition3-callback43()
+            activeInput=input
+            startPointer=pointer
+            pointerOffset=pointer-rootPosition()
         end))
-        table.insert(self._connections,UserInputService.InputEnded:Connect(function(configuration97)
-            if not enabled11 then
-                return
-            end
-            if isPrimaryInput(configuration97)then
-                enabled11,value165=false,nil
-                self:_clampToScreen()
-            end
+        table.insert(self._connections,UserInputService.InputEnded:Connect(function(input)
+            if input==activeInput then stopDrag(true) end
         end))
-        table.insert(self._frameSteps,function(configuration98)
-            if not enabled11 then
+        table.insert(self._frameSteps,function(delta)
+            if not activeInput then return end
+            if self._destroyed or not self.Open or not self.Gui.Enabled or not self.Root.Visible
+                or UserInputService:GetFocusedTextBox()
+                or activeInput.UserInputState==Enum.UserInputState.Cancel
+                or activeInput.UserInputState==Enum.UserInputState.End then
+                stopDrag(true)
                 return
             end
-            value165=getPointerPosition()-zero
-            local value166=callback43()
-            local value167=1-math.exp(-configuration98*45)
-            local value168=value166:Lerp(value165,value167)
-            self.Root.Position=UDim2.fromOffset(value168.X,value168.Y)
+            local pointer=pointerPosition(activeInput)
+            if not dragging then
+                local threshold=activeInput.UserInputType==Enum.UserInputType.Touch and 8 or 3
+                if (pointer-startPointer).Magnitude<threshold then return end
+                dragging=true
+            end
+            local destination=pointer-pointerOffset
+            local position=rootPosition():Lerp(destination,1-math.exp(-delta*45))
+            self.Root.Position=UDim2.fromOffset(position.X,position.Y)
         end)
     end
     local function revealElement(configuration99,argument49,argument50)
@@ -5169,6 +5189,7 @@ local AdapterFactory = (function()
                 end
             end
             local topbar = new("Frame", { Name = "UITopbar", Size = UDim2.new(1, 0, 0, 48), BackgroundTransparency = 1, Parent = native.Content })
+            native.DragHandles = { header, topbar }
             local right = new("Frame", { Name = "Right", AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -12, 0.5, 0), Size = UDim2.new(0, 0, 1, 0), AutomaticSize = Enum.AutomaticSize.X, BackgroundTransparency = 1, Parent = topbar })
             new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, VerticalAlignment = Enum.VerticalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4), Parent = right })
             local window = {
