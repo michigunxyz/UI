@@ -935,6 +935,9 @@ local Airflow = (function()
         table.insert(entries8._listeners,function()
             valueScaleConnection:Disconnect()
         end)
+        entries8.TitleLabel=sliderTitle
+        entries8.ValueLabel=textLabel4
+        entries8.ValueInput=textBox
         return registerElement(self,configuration30,entries8,cardFrame3,"Slider")
     end
     function NativeTab:Dropdown(configuration39)
@@ -1303,12 +1306,16 @@ local Airflow = (function()
             end
             invokeCallback(configuration47.Callback,textBox3.Text,configuration49)
         end)
-        return registerElement(self,configuration47,{Set=function(configuration50,argument35)
+        local control=registerElement(self,configuration47,{Set=function(configuration50,argument35)
             textBox3.Text=tostring(argument35)
             addCardGradient(value81)
         end,Get=function()
             return textBox3.Text
         end},value80,"Input")
+        control.TitleLabel=value83
+        control.DescriptionLabel=value84
+        control.ValueInput=textBox3
+        return control
     end
     function NativeTab:Keybind(configuration51)
         local value90,value91,value92,value93,value94
@@ -3596,7 +3603,11 @@ local AdapterFactory = (function()
             local frame = native._frame
             local labels = textLabels(frame)
             handle.Instance, handle.Frame, handle.Holder = frame, frame, frame
-            handle.UIElements = { Main = frame, Title = labels[1], Desc = config.Desc and labels[2] or nil, Container = frame }
+            handle.UIElements = { Main = frame, Title = native.TitleLabel or labels[1], Desc = config.Desc and labels[2] or nil, Container = frame }
+            if kind == "Slider" or kind == "Input" then
+                handle.UIElements.Desc = native.DescriptionLabel
+                handle.UIElements.Value = native.ValueLabel or native.ValueInput
+            end
             handle[kind .. "Frame"] = { UIElements = handle.UIElements }
             if kind == "Paragraph" then
                 handle.UIElements.Desc = labels[2]
