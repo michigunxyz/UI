@@ -2542,8 +2542,14 @@ local Airflow = (function()
             local success9,result8=pcall(function()
                 return Players2:GetUserThumbnailAsync(LocalPlayer.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size100x100)
             end)
-            if success9 and result8 then
+            if self._destroyed or not imageLabel14.Parent then return end
+            if success9 and type(result8)=="string" and result8~="" then
                 imageLabel14.Image=result8
+            else
+                local userId=tonumber(LocalPlayer.UserId)
+                if userId and userId>0 then
+                    imageLabel14.Image="rbxthumb://type=AvatarHeadShot&id="..tostring(userId).."&w=150&h=150"
+                end
             end
         end)
         createLabel{Position=UDim2.fromOffset(58,11),Size=UDim2.new(1,-72,0,18),Text=(configuration123.Welcome or"Hello, ")..LocalPlayer.DisplayName,TextSize=15,Parent=value201}
@@ -2848,11 +2854,12 @@ local Airflow = (function()
         value218._label=createLabel{Position=UDim2.fromOffset(value219 and 36 or 14,0),Size=UDim2.new(1,-(value219 and 44 or 22),1,0),Text=value218.Name,TextColor3=nativeTheme2.Muted,Parent=textButton10}
         local frame18=createInstance("Frame",{Name=value218.Name,Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false,Parent=self.Content})
         value218._page=frame18
-        createLabel{Position=UDim2.fromOffset(24,20),Size=UDim2.new(1,-72,0,24),Text=value218.Name,TextSize=22,Parent=frame18}
+        value218._heading=createLabel{Position=UDim2.fromOffset(24,20),Size=UDim2.new(1,-72,0,24),Text=value218.Name,TextSize=22,Parent=frame18}
         if configuration126.Desc then
-            createLabel{Position=UDim2.fromOffset(24,44),Size=UDim2.new(1,-72,0,16),Text=configuration126.Desc,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=frame18}
+            value218._description=createLabel{Position=UDim2.fromOffset(24,44),Size=UDim2.new(1,-72,0,16),Text=configuration126.Desc,TextSize=13,FontFace=nativeFonts.Regular,TextColor3=nativeTheme2.Muted,Parent=frame18}
         end
         local value220=configuration126.Desc and 70 or 58
+        value218._headerHeight=value220
         local scrollingFrame2=createInstance("ScrollingFrame",{Position=UDim2.fromOffset(0,value220),Size=UDim2.new(1,0,1,-value220),BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=2,ScrollBarImageColor3=nativeTheme2.Accent,ScrollBarImageTransparency=.5,AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),Parent=frame18})
         addPadding(scrollingFrame2,24,24,2,24)
         createInstance("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,8),Parent=scrollingFrame2})
@@ -4974,6 +4981,125 @@ local AdapterFactory = (function()
             end)
             return button
         end
+        function WindowMethods:CreateWebsiteCard(config)
+            config=config or {}
+            local window=self
+            if self.UIElements.WebsiteCard then
+                if type(config.Callback)=="function" then self._websiteCardCallback=config.Callback end
+                return self.UIElements.WebsiteCard
+            end
+            self._websiteCardCallback=config.Callback or function()
+                local copied=type(setclipboard)=="function" and pcall(setclipboard,"https://michigun.xyz")
+                if copied then window:Notify({Title="Website copiado",Content="https://michigun.xyz",Duration=3}) end
+                return copied==true
+            end
+            local topbar=self.UIElements.Topbar
+            local actions=topbar.Right
+            local card=new("TextButton",{
+                Name="WebsiteCard",AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-160,0,32),Size=UDim2.fromOffset(190,30),
+                BackgroundColor3=Airflow.Theme.Surface2,BorderSizePixel=0,Text="",AutoButtonColor=false,
+                ZIndex=8,Parent=topbar,
+            })
+            card:SetAttribute("NoDrag",true)
+            new("UICorner",{CornerRadius=UDim.new(0,8),Parent=card})
+            local border=new("UIStroke",{Color=Airflow.Theme.Stroke,Thickness=1,Parent=card})
+            local icon=new("ImageLabel",{
+                AnchorPoint=Vector2.new(0,.5),Position=UDim2.new(0,10,.5,0),Size=UDim2.fromOffset(15,15),
+                BackgroundTransparency=1,ZIndex=9,Parent=card,
+            })
+            setIcon(icon,"globe",Airflow.Theme.Muted)
+            local caption=new("TextLabel",{
+                Position=UDim2.fromOffset(34,0),Size=UDim2.new(1,-44,1,0),BackgroundTransparency=1,
+                Text=config.Title or "Website: michigun.xyz",TextColor3=Airflow.Theme.Text,
+                FontFace=Airflow.Fonts.Medium,TextSize=12,TextXAlignment=Enum.TextXAlignment.Left,
+                TextYAlignment=Enum.TextYAlignment.Center,TextTruncate=Enum.TextTruncate.AtEnd,ZIndex=9,Parent=card,
+            })
+            self.UIElements.WebsiteCard=card
+            local scheduled=false
+            local function layout()
+                if scheduled or window._destroyed then return end
+                scheduled=true
+                task.defer(function()
+                    scheduled=false
+                    if window._destroyed or not card.Parent then return end
+                    local scale=math.max(window._native.Scale.Scale,.01)
+                    local width=topbar.AbsoluteSize.X/scale
+                    if width<=0 then return end
+                    local actionsWidth=actions.AbsoluteSize.X/scale
+                    local cardWidth=math.min(math.max(172,math.ceil(caption.TextBounds.X/scale+44)),math.max(44,width-48))
+                    local stacked=width<actionsWidth+cardWidth+96+60
+                    local extra=stacked and 40 or 0
+                    local active=window._native.CurrentTab
+                    local headerHeight=active and (active._headerHeight
+                        or active._websiteListPosition and active._websiteListPosition.Y.Offset
+                        or active.List and active.List.Position.Y.Offset) or 58
+                    card.Size=UDim2.fromOffset(cardWidth,30)
+                    card.AnchorPoint=Vector2.new(stacked and 0 or 1,.5)
+                    card.Position=stacked and UDim2.fromOffset(24,headerHeight+12)
+                        or UDim2.new(1,-actionsWidth-24,0,32)
+                    topbar.Size=UDim2.new(1,0,0,stacked and headerHeight+40 or 48)
+                    for _,tab in ipairs(window._native.Tabs) do
+                        if not tab._heading and tab._page then
+                            for _,child in ipairs(tab._page:GetChildren()) do
+                                if child:IsA("TextLabel") then
+                                    if child.Position.Y.Offset==20 then tab._heading=child end
+                                    if child.Position.Y.Offset==44 then tab._description=child end
+                                end
+                            end
+                        end
+                        if tab._heading then
+                            local titleWidth=math.max(0,width-actionsWidth-48-(stacked and 0 or cardWidth+12))
+                            tab._heading.Size=UDim2.fromOffset(titleWidth,24)
+                            if tab._description then tab._description.Size=UDim2.fromOffset(titleWidth,16) end
+                        end
+                        if tab.List then
+                            if not tab._websiteListPosition then
+                                tab._websiteListPosition=tab.List.Position
+                                tab._websiteListSize=tab.List.Size
+                            end
+                            local position,size=tab._websiteListPosition,tab._websiteListSize
+                            tab.List.Position=UDim2.new(position.X.Scale,position.X.Offset,position.Y.Scale,position.Y.Offset+extra)
+                            tab.List.Size=UDim2.new(size.X.Scale,size.X.Offset,size.Y.Scale,size.Y.Offset-extra)
+                        end
+                    end
+                end)
+            end
+            self._layoutWebsiteCard=layout
+            connect(topbar:GetPropertyChangedSignal("AbsoluteSize"),layout)
+            connect(actions:GetPropertyChangedSignal("AbsoluteSize"),layout)
+            connect(caption:GetPropertyChangedSignal("TextBounds"),layout)
+            connect(self._native.Scale:GetPropertyChangedSignal("Scale"),layout)
+            connect(self._native.Content.ChildAdded,layout)
+            self.TabModule:OnChange(layout)
+            local hovered=false
+            connect(card.MouseEnter,function()
+                hovered=true
+                border.Color=Airflow.Theme.StrokeHover
+                card.BackgroundColor3=Airflow.Theme.Surface3
+            end)
+            connect(card.MouseLeave,function()
+                hovered=false
+                border.Color=Airflow.Theme.Stroke
+                card.BackgroundColor3=Airflow.Theme.Surface2
+            end)
+            local feedback=0
+            connect(card.Activated,function()
+                if window._destroyed then return end
+                local copied=call(window._websiteCardCallback)
+                if copied~=true then return end
+                feedback+=1
+                local generation=feedback
+                setIcon(icon,"check",Airflow.Theme.Success)
+                border.Color=Airflow.Theme.Success
+                task.delay(1.2,function()
+                    if window._destroyed or not icon.Parent or generation~=feedback then return end
+                    setIcon(icon,"globe",Airflow.Theme.Muted)
+                    border.Color=hovered and Airflow.Theme.StrokeHover or Airflow.Theme.Stroke
+                end)
+            end)
+            layout()
+            return card
+        end
         function WindowMethods:Section(config)
             config = type(config) == "table" and config or { Title = tostring(config or "") }
             self._sidebarOrder += 1
@@ -5066,6 +5192,7 @@ local AdapterFactory = (function()
             self.TabModule.Tabs[tab.Index] = tab
             self.TabModule.Containers[tab.Index] = native._page
             self._tabsByNative[native] = tab
+            if self._layoutWebsiteCard then self._layoutWebsiteCard() end
             function tab:Select()
                 self._window._native:SelectTab(self._nativeTab);
                 return self
@@ -5255,6 +5382,7 @@ local AdapterFactory = (function()
                     tab._sidebarSection:SetOpened(true)
                 end
                 nativeSelect(object, selected)
+            if window._layoutWebsiteCard then window._layoutWebsiteCard() end
                 if tab then
                     rawset(window, "_currentIndex", tab.Index)
                     window.TabModule.SelectedTab = tab.Index
@@ -5371,6 +5499,7 @@ local AdapterFactory = (function()
             ZIndex = minimize.ZIndex + 1, Parent = minimize,
         })
             window:SetToTheCenter()
+            window:CreateWebsiteCard()
             self:SetNotificationLower(self._notificationsLower ~= false)
             for _, notification in ipairs(self._pendingNotifications or {}) do
                 self:Notify(notification)
