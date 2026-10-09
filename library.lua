@@ -2622,27 +2622,43 @@ local Airflow = (function()
         end
         local fps = moveValue(values.FPS, ring, 26)
         fps.AnchorPoint = Vector2.new(0.5, 0.5)
-        fps.Position = UDim2.new(0.5, 0, 0.5, -8)
+        fps.Position = UDim2.fromScale(0.5, 0.5)
         fps.Size = UDim2.new(1, -20, 0, 32)
         fps.TextXAlignment = Enum.TextXAlignment.Center
-        local fpsCaption = label(ring, "quadros / segundo", 10, true)
-        fpsCaption.Position = UDim2.new(0, 0, 0.5, 14)
-        fpsCaption.Size = UDim2.new(1, 0, 0, 18)
+        local fpsCaption = label(performance, "quadros por segundo", 11, true)
+        fpsCaption.ZIndex = 3
+        fpsCaption.Size = UDim2.new(1, -20, 0, 20)
         fpsCaption.TextXAlignment = Enum.TextXAlignment.Center
-        local ping = moveValue(values.Ping, performance, 12)
+        local pingRow = createInstance("Frame", { Name = "PingRow", BackgroundTransparency = 1,
+            AnchorPoint = Vector2.new(0.5, 0.5), Size = UDim2.fromOffset(100, 22), Parent = performance })
+        local ping = moveValue(values.Ping, pingRow, 12)
         ping.TextXAlignment = Enum.TextXAlignment.Center
-        local pingIcon = createIcon(performance, "wifi", nativeTheme2.Muted, UDim2.fromOffset(0, 0))
+        local pingIcon = createIcon(pingRow, "wifi", nativeTheme2.Muted, UDim2.new(0, 0, 0.5, 0))
+        ping.Position = UDim2.fromOffset(24, 0)
+        ping.Size = UDim2.new(1, -24, 1, 0)
+        ping.TextXAlignment = Enum.TextXAlignment.Left
         local community = card("CommunityCard", list, 3)
-        local communityIcon = createInstance("Frame", { Position = UDim2.fromOffset(14, 16), Size = UDim2.fromOffset(50, 50),
+        local communityIcon = createInstance("ImageLabel", { Name = "CommunityAvatar", Size = UDim2.fromOffset(56, 56),
             BackgroundColor3 = nativeTheme2.Surface3, BorderSizePixel = 0, Parent = community })
+        communityIcon:SetAttribute("UIUnthemed", true)
         addCorner(communityIcon, UDim.new(0, 12))
-        createIcon(communityIcon, "messages-square", nativeTheme2.Text, UDim2.new(0.5, -8, 0.5, -8))
-        local communityTitle = label(community, "Comunidade Michigun", 15, false)
-        communityTitle.Position = UDim2.fromOffset(78, 15)
-        local communityDesc = label(community, "Atualizações, suporte e novidades no Discord.", 12, true)
-        communityDesc.Position = UDim2.fromOffset(78, 41)
-        communityDesc.TextWrapped = true
-        communityDesc.TextTruncate = Enum.TextTruncate.None
+        local placeholderIcon = createIcon(communityIcon, "messages-square", nativeTheme2.Text, UDim2.new(0.5, -8, 0.5, 0))
+        local communityInfo = createInstance("Frame", { Name = "CommunityInfo", BackgroundTransparency = 1, Parent = community })
+        local communityTitle = label(communityInfo, "Comunidade Michigun", 16, false)
+        communityTitle.Position = UDim2.fromOffset(0, 0)
+        communityTitle.Size = UDim2.new(1, 0, 0, 24)
+        communityTitle.TextXAlignment = Enum.TextXAlignment.Center
+        communityTitle.RichText = false
+        local communityDesc = label(communityInfo, "Carregando informações do Discord…", 11, true)
+        communityDesc.Position = UDim2.fromOffset(0, 28)
+        communityDesc.Size = UDim2.new(1, 0, 0, 18)
+        communityDesc.TextXAlignment = Enum.TextXAlignment.Center
+        local memberCounts = label(communityInfo, "Online: —   ·   Membros: —", 12, true)
+        memberCounts.Position = UDim2.fromOffset(0, 53)
+        memberCounts.Size = UDim2.new(1, 0, 0, 34)
+        memberCounts.TextXAlignment = Enum.TextXAlignment.Center
+        memberCounts.TextWrapped = true
+        memberCounts.TextTruncate = Enum.TextTruncate.None
         local invite = card("CopyDiscordInvite", community, nil, true)
         invite.BackgroundColor3 = nativeTheme2.Surface3
         local inviteLabel = label(invite, "Copiar convite", 12, false)
@@ -2690,7 +2706,14 @@ local Airflow = (function()
         end
         local function layout()
             if self._destroyed or not list.Parent then return end
-            local width = list.AbsoluteSize.X
+            local scale, ancestor = 1, list
+            while ancestor and ancestor ~= self.Gui do
+                for _, child in ipairs(ancestor:GetChildren()) do
+                    if child:IsA("UIScale") and child.Scale > 0 then scale *= child.Scale end
+                end
+                ancestor = ancestor.Parent
+            end
+            local width = list.AbsoluteSize.X / scale
             if width <= 0 then return end
             local compact = width < 430
             local leftWidth = compact and width or width - 174
@@ -2707,37 +2730,50 @@ local Airflow = (function()
             local topHeight = welcomeHeight + 140
             if compact then
                 performance.Position = UDim2.fromOffset(0, topHeight + 10)
-                performance.Size = UDim2.fromOffset(width, 116)
-                topHeight += 126
-                ring.Position = UDim2.fromOffset(8, 3)
+                performance.Size = UDim2.fromOffset(width, 132)
+                topHeight += 142
+                ring.Position = UDim2.fromOffset(8, 11)
                 ring.Size = UDim2.fromOffset(110, 110)
                 performanceTitle.Position = UDim2.fromOffset(128, 20)
                 performanceTitle.Size = UDim2.new(1, -142, 0, 24)
                 performanceTitle.TextXAlignment = Enum.TextXAlignment.Left
-                ping.Position = UDim2.fromOffset(150, 58)
-                ping.Size = UDim2.new(1, -164, 0, 22)
-                ping.TextXAlignment = Enum.TextXAlignment.Left
-                pingIcon.Position = UDim2.fromOffset(128, 63)
+                fpsCaption.Position = UDim2.fromOffset(128, 48)
+                fpsCaption.Size = UDim2.new(1, -142, 0, 28)
+                fpsCaption.TextWrapped = true
+                pingRow.Position = UDim2.new(0.5, 57, 0, 99)
             else
                 performance.Position = UDim2.fromOffset(leftWidth + 10, 0)
                 performance.Size = UDim2.fromOffset(164, topHeight)
-                ring.Position = UDim2.fromOffset(22, 58)
+                ring.Position = UDim2.new(0.5, -60, 0, 51)
                 ring.Size = UDim2.fromOffset(120, 120)
                 performanceTitle.Position = UDim2.fromOffset(10, 19)
                 performanceTitle.Size = UDim2.new(1, -20, 0, 24)
                 performanceTitle.TextXAlignment = Enum.TextXAlignment.Center
-                ping.Position = UDim2.fromOffset(48, topHeight - 44)
-                ping.Size = UDim2.fromOffset(102, 22)
-                ping.TextXAlignment = Enum.TextXAlignment.Left
-                pingIcon.Position = UDim2.fromOffset(27, topHeight - 39)
+                fpsCaption.Position = UDim2.fromOffset(10, 182)
+                fpsCaption.Size = UDim2.new(1, -20, 0, 20)
+                fpsCaption.TextWrapped = false
+                pingRow.Position = UDim2.new(0.5, 0, 0, topHeight - 29)
             end
             top.Size = UDim2.new(1, 0, 0, topHeight)
-            community.Size = UDim2.new(1, 0, 0, compact and 130 or 92)
-            communityTitle.Size = UDim2.new(1, -(compact and 92 or 218), 0, 22)
-            communityDesc.Size = UDim2.new(1, -(compact and 92 or 218), 0, compact and 34 or 36)
-            invite.AnchorPoint = compact and Vector2.new(0, 0) or Vector2.new(1, 0.5)
-            invite.Position = compact and UDim2.fromOffset(14, 83) or UDim2.new(1, -14, 0.5, 0)
-            invite.Size = compact and UDim2.new(1, -28, 0, 36) or UDim2.fromOffset(118, 44)
+            local stackedCommunity = width < 560
+            community.Size = UDim2.new(1, 0, 0, stackedCommunity and 218 or 122)
+            if stackedCommunity then
+                communityIcon.AnchorPoint = Vector2.new(0.5, 0)
+                communityIcon.Position = UDim2.new(0.5, 0, 0, 14)
+                communityInfo.Position = UDim2.fromOffset(14, 80)
+                communityInfo.Size = UDim2.new(1, -28, 0, 82)
+                invite.AnchorPoint = Vector2.new(0, 0)
+                invite.Position = UDim2.fromOffset(14, 170)
+                invite.Size = UDim2.new(1, -28, 0, 36)
+            else
+                communityIcon.AnchorPoint = Vector2.new(0, 0.5)
+                communityIcon.Position = UDim2.new(0, 16, 0.5, 0)
+                communityInfo.Position = UDim2.fromOffset(88, 18)
+                communityInfo.Size = UDim2.new(1, -234, 0, 86)
+                invite.AnchorPoint = Vector2.new(1, 0.5)
+                invite.Position = UDim2.new(1, -14, 0.5, 0)
+                invite.Size = UDim2.fromOffset(118, 44)
+            end
             actions.Size = UDim2.new(1, 0, 0, compact and 266 or 82)
             for index, definition in ipairs(definitions) do
                 local control = tab._dashboardControls[definition.Id]
@@ -2746,6 +2782,42 @@ local Airflow = (function()
                 control.Button.Size = compact and UDim2.new(1, 0, 0, 82) or UDim2.new(1 / 3, -16 / 3, 0, 82)
             end
         end
+        local communityPending, nextCommunityRefresh = false, 0
+        local function formatCount(value)
+            if type(value) ~= "number" or value ~= value or value < 0 or value == math.huge then return "—" end
+            local text = tostring(math.floor(value))
+            return text:reverse():gsub("(%d%d%d)", "%1."):reverse():gsub("^%.", "")
+        end
+        local function refreshCommunity()
+            if communityPending then return end
+            if type(config.CommunityProvider) ~= "function" then
+                communityDesc.Text = "Informações da comunidade indisponíveis"
+                return
+            end
+            communityPending = true
+            nextCommunityRefresh = os.clock() + 180
+            task.spawn(function()
+                local success, data = pcall(config.CommunityProvider)
+                communityPending = false
+                if self._destroyed or not community.Parent then return end
+                if not success or type(data) ~= "table" then data = { Status = "Dados da comunidade indisponíveis" } end
+                if type(data.Name) == "string" and data.Name ~= "" then communityTitle.Text = data.Name end
+                communityDesc.Text = data.Status or "Contagens estimadas pelo Discord"
+                memberCounts.Text = formatCount(data.Online) .. " online   ·   " .. formatCount(data.Members) .. " membros"
+                if type(data.Image) == "string" and data.Image ~= "" then
+                    communityIcon.Image = data.Image
+                    placeholderIcon.Visible = false
+                end
+            end)
+        end
+        tab._refreshCommunity = refreshCommunity
+        local function centerPing()
+            if not pingRow.Parent then return end
+            local textWidth = ping.TextBounds.X
+            pingRow.Size = UDim2.fromOffset(math.max(1, textWidth) + 24, 22)
+        end
+        table.insert(self._connections, ping:GetPropertyChangedSignal("TextBounds"):Connect(centerPing))
+        if self.Scale then table.insert(self._connections, self.Scale:GetPropertyChangedSignal("Scale"):Connect(layout)) end
         local lastFPS, lastTheme
         local function paintGauge()
             local value = tonumber(fps.Text) or 0
@@ -2757,11 +2829,16 @@ local Airflow = (function()
         table.insert(self._connections, list:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout))
         table.insert(self._connections, fps:GetPropertyChangedSignal("Text"):Connect(paintGauge))
         self:_listen("Render", function()
-            if self.Open and self.Gui.Enabled and self.CurrentTab == tab then paintGauge() end
+            if self.Open and self.Gui.Enabled and self.CurrentTab == tab then
+                paintGauge()
+                if os.clock() >= nextCommunityRefresh then refreshCommunity() end
+            end
         end)
         tab._dashboardLayout = layout
         layout()
         paintGauge()
+        centerPing()
+        refreshCommunity()
     end
     function NativeWindow:_buildHome(configuration123)
         local text20,text21,text22,text23="Frame","UIListLayout","NoDrag","Executor"
