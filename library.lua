@@ -988,7 +988,18 @@ local Airflow = (function()
         textLabel6:GetPropertyChangedSignal"TextBounds":Connect(function()
             callback15(false)
         end)
-        local value66=createInstance(text4,{Position=UDim2.new(0,10,0,value61),Size=UDim2.new(1,-20,0,0),BackgroundTransparency=1,Parent=value59})
+        local maxVisibleOptions=tonumber(configuration39.MaxVisibleOptions)
+        local optionsProperties={Position=UDim2.new(0,10,0,value61),Size=UDim2.new(1,-20,0,0),BackgroundTransparency=1,Parent=value59}
+        if maxVisibleOptions then
+            maxVisibleOptions=math.max(1,math.floor(maxVisibleOptions))
+            optionsProperties.BorderSizePixel=0
+            optionsProperties.CanvasSize=UDim2.new()
+            optionsProperties.AutomaticCanvasSize=Enum.AutomaticSize.Y
+            optionsProperties.ScrollingDirection=Enum.ScrollingDirection.Y
+            optionsProperties.ScrollBarThickness=3
+            optionsProperties.ScrollBarImageColor3=nativeTheme2.StrokeHover
+        end
+        local value66=createInstance(maxVisibleOptions and "ScrollingFrame" or text4,optionsProperties)
         createInstance("UIListLayout",{SortOrder=Enum.SortOrder.LayoutOrder,Padding=UDim.new(0,4),Parent=value66})
         local entries9={Open=false}
         local entries10={}
@@ -1066,6 +1077,10 @@ local Airflow = (function()
                     local row=entries11[label]
                     height+=(row and row.Frame.Size.Y.Offset or dropdownOptionHeight)+4
                 end
+            end
+            if maxVisibleOptions then
+                height=math.min(height,value61+8+maxVisibleOptions*(dropdownOptionHeight+4)+(value68.Visible and dropdownOptionHeight+4 or 0))
+                value66.Size=UDim2.new(1,-20,0,math.max(0,height-value61-8))
             end
             return height
         end
@@ -4373,6 +4388,7 @@ local AdapterFactory = (function()
                 opts.CurrentOption = toNativeSelection(handle, config.Value)
                 opts.MultipleOptions = handle.Multi
                 opts.SearchAfter = config.SearchBarEnabled and 0 or 6
+                opts.MaxVisibleOptions = config.MaxVisibleOptions
                 native = context._provider:CreateDropdown(opts)
             elseif kind == "Input" then
                 opts.Icon = config.InputIcon or config.Icon
@@ -4821,26 +4837,32 @@ local AdapterFactory = (function()
                 followTail = messages.AbsoluteCanvasSize.Y - messages.AbsoluteWindowSize.Y - messages.CanvasPosition.Y < 36
             end)
             bind(handle, messages:GetPropertyChangedSignal("AbsoluteCanvasSize"), scrollToEnd)
-            local function resize()
+            local function layoutChat()
                 if handle._destroyed then return end
                 local page = handle._context._window._native.Content
                 local scale = handle._context._window._native.Scale
                 local height = page.AbsoluteSize.Y / (scale and scale.Scale > 0 and scale.Scale or 1)
-                frame.Size = UDim2.new(1, 0, 0, math.clamp(height - 72, 300, 480))
+                local documentHeight = documentRow.Visible and (handle._documents and handle._documents.Frame.Size.Y.Offset or (Airflow.Touch and 54 or 48)) or 0
+                local offset = 62 + (documentHeight > 0 and documentHeight + 8 or 0)
+                local expandedHeight = math.max(0, documentHeight - (Airflow.Touch and 54 or 48))
+                frame.Size = UDim2.new(1, 0, 0, math.clamp(height + 80, Airflow.Touch and 480 or 520, 760) + expandedHeight)
+                documentRow.Size = UDim2.new(1, -24, 0, documentHeight)
+                messages.Position, messages.Size = UDim2.fromOffset(0, offset), UDim2.new(1, 0, 1, -(offset + 112))
+                empty.Position, empty.Size = UDim2.fromOffset(20, offset), UDim2.new(1, -40, 1, -(offset + 112))
             end
-            bind(handle, self._window._native.Content:GetPropertyChangedSignal("AbsoluteSize"), resize)
-            resize()
+            bind(handle, self._window._native.Content:GetPropertyChangedSignal("AbsoluteSize"), layoutChat)
+            layoutChat()
             function handle:Documents(options)
                 if self._documents then return self._documents end
                 options = table.clone(options or {})
                 options.Title, options.Desc = "Documento", nil
                 options.SearchBarEnabled = true
+                options.MaxVisibleOptions = 4
                 local documentsContext = context(self, provider(self._context, documentRow), documentRow)
                 self._documents = ContainerMethods.Dropdown(documentsContext, options)
                 documentRow.Visible = true
-                local offset = 62 + (Airflow.Touch and 54 or 48) + 8
-                messages.Position, messages.Size = UDim2.fromOffset(0, offset), UDim2.new(1, 0, 1, -(offset + 112))
-                empty.Position, empty.Size = UDim2.fromOffset(20, offset), UDim2.new(1, -40, 1, -(offset + 112))
+                bind(self, self._documents.Frame:GetPropertyChangedSignal("Size"), layoutChat)
+                layoutChat()
                 return self._documents
             end
             function handle:SetContext(value)
@@ -4874,14 +4896,23 @@ local AdapterFactory = (function()
                     new("UIPadding", { PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, 12),
                         PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), Parent = body })
                 end
-                local author = text(body, isUser and "Você" or message.Error and "Não foi possível responder" or "Assistente", 11, true, true)
-                author.Size, author.LayoutOrder = UDim2.new(1, 0, 0, 18), 1
+                local messageHeader = new("Frame", { Size = UDim2.new(1, 0, 0, 18),
+                    BackgroundTransparency = 1, LayoutOrder = 1, Parent = body })
+                local author = text(messageHeader, isUser and "Você" or message.Error and "Pedido encerrado" or "Assistente", 11, true, true)
+                author.Size = UDim2.new(1, message.Duration and -116 or 0, 1, 0)
+                if type(message.Duration) == "number" then
+                    local duration = text(messageHeader, (message.Error and "Após " or "Resposta em ")
+                        .. string.format("%.1f s", math.max(0, message.Duration)):gsub("%.", ","), 10, true)
+                    duration.AnchorPoint, duration.Position = Vector2.new(1, 0), UDim2.fromScale(1, 0)
+                    duration.Size, duration.TextXAlignment = UDim2.new(0, 112, 1, 0), Enum.TextXAlignment.Right
+                end
                 if isUser then author.TextColor3 = Airflow.Theme.Text end
                 local rawText = tostring(message.Text or "")
                 local content = text(body, rawText, 14, false)
                 content.Size, content.AutomaticSize = UDim2.new(1, 0, 0, 0), Enum.AutomaticSize.Y
                 content.TextWrapped, content.TextTruncate = true, Enum.TextTruncate.None
                 content.TextYAlignment, content.LayoutOrder = Enum.TextYAlignment.Top, 2
+                entry.UIElements.Message = content
                 if not isUser and not message.Pending then
                     local formatted = rawText:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
                     formatted = formatted:gsub("%*%*(.-)%*%*", "<b>%1</b>")
@@ -4919,9 +4950,24 @@ local AdapterFactory = (function()
                 scrollToEnd()
                 return entry
             end
-            function handle:SetBusy(value)
+            function handle:SetProgress(elapsed)
+                if self._destroyed or not self._busy then return self end
+                elapsed = math.max(0, tonumber(elapsed) or 0)
+                local step = math.floor(elapsed * 2)
+                if step == self._progressStep then return self end
+                self._progressStep = step
+                local duration = string.format("%.1f s", elapsed):gsub("%.", ",")
+                local dots = string.rep(".", step % 3 + 1)
+                hint.Text = "Aguardando a IA" .. dots .. " · " .. duration
+                if self._pending and not self._pending._destroyed then
+                    self._pending.UIElements.Message.Text = "Preparando a resposta" .. dots .. "  " .. duration
+                end
+                return self
+            end
+            function handle:SetBusy(value, elapsed, ok)
                 if self._destroyed then return self end
                 self._busy = value == true
+                self._progressStep = nil
                 clear.Interactable = true
                 send.Text = self._busy and "…" or "Enviar"
                 refreshSend()
@@ -4940,6 +4986,12 @@ local AdapterFactory = (function()
                     if index then table.remove(self._messages, index) end
                     pcall(self._pending.Destroy, self._pending)
                     self._pending = nil
+                end
+                if self._busy then
+                    self:SetProgress(0)
+                elseif type(elapsed) == "number" then
+                    hint.Text = (ok == false and "Pedido encerrado em " or "Resposta recebida em ")
+                        .. string.format("%.1f s", math.max(0, elapsed)):gsub("%.", ",")
                 end
                 return self
             end
