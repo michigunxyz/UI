@@ -2659,13 +2659,13 @@ local Airflow = (function()
         ping.TextTruncate = Enum.TextTruncate.None
         ping.TextXAlignment = Enum.TextXAlignment.Left
         local community = card("CommunityCard", list, 3)
-        community.Size = UDim2.new(1, 0, 0, 154)
+        community.Size = UDim2.new(1, 0, 0, 216)
         local communityPalette = {
-            Blurple = Color3.fromRGB(156, 128, 255),
-            Surface = Color3.fromRGB(102, 68, 218),
-            SurfaceLow = Color3.fromRGB(65, 45, 150),
-            Text = Color3.fromRGB(251, 250, 255),
-            Muted = Color3.fromRGB(235, 228, 255),
+            Blurple = Color3.fromRGB(88, 101, 242),
+            Surface = Color3.fromRGB(88, 101, 242),
+            SurfaceLow = Color3.fromRGB(48, 55, 142),
+            Text = Color3.fromRGB(254, 254, 255),
+            Muted = Color3.fromRGB(254, 254, 255),
             Invite = Color3.fromRGB(84, 218, 148),
             InviteHover = Color3.fromRGB(108, 233, 167),
             InvitePressed = Color3.fromRGB(63, 187, 125),
@@ -2673,8 +2673,11 @@ local Airflow = (function()
         }
         community.BackgroundColor3 = Color3.new(1, 1, 1)
         community.BackgroundTransparency = 0
-        createInstance("UIGradient", { Color = ColorSequence.new(communityPalette.Surface, communityPalette.SurfaceLow),
-            Rotation = 12, Parent = community })
+        local communityGradient = createInstance("UIGradient", { Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, communityPalette.Surface),
+            ColorSequenceKeypoint.new(0.55, Color3.fromRGB(69, 78, 198)),
+            ColorSequenceKeypoint.new(1, communityPalette.SurfaceLow),
+        }), Rotation = 18, Parent = community })
         local communityBorder = community:FindFirstChildWhichIsA("UIStroke")
         communityBorder.Color = communityPalette.Blurple
         communityBorder.Transparency = 0.12
@@ -2686,10 +2689,10 @@ local Airflow = (function()
             ZIndex = 0, Active = false, Selectable = false, Parent = community })
         communityGlow:SetAttribute("UIUnthemed", true)
         local communityGroup = createInstance("Frame", { Name = "CommunityIdentity", BackgroundTransparency = 1,
-            AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 16),
-            Size = UDim2.new(1, -32, 0, 64), Parent = community })
-        createInstance("UISizeConstraint", { MaxSize = Vector2.new(360, 64), Parent = communityGroup })
-        local communityIcon = createInstance("ImageLabel", { Name = "CommunityAvatar", Size = UDim2.fromOffset(56, 56),
+            AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 20),
+            Size = UDim2.new(1, -40, 0, 104), Parent = community })
+        local communityConstraint = createInstance("UISizeConstraint", { MaxSize = Vector2.new(480, 104), Parent = communityGroup })
+        local communityIcon = createInstance("ImageLabel", { Name = "CommunityAvatar", Size = UDim2.fromOffset(72, 72),
             AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.fromScale(0, 0.5),
             BackgroundColor3 = communityPalette.SurfaceLow, BorderSizePixel = 0, Parent = communityGroup })
         communityIcon:SetAttribute("UIUnthemed", true)
@@ -2697,31 +2700,36 @@ local Airflow = (function()
         local placeholderIcon = createIcon(communityIcon, "messages-square", communityPalette.Text, UDim2.new(0.5, -8, 0.5, 0))
         placeholderIcon:SetAttribute("UIUnthemed", true)
         local communityInfo = createInstance("Frame", { Name = "CommunityInfo", BackgroundTransparency = 1,
-            Position = UDim2.fromOffset(72, 0), Size = UDim2.new(1, -72, 1, 0), Parent = communityGroup })
-        local communityTitle = label(communityInfo, "Comunidade Michigun", 16, false)
-        communityTitle.Position = UDim2.fromOffset(0, 4)
-        communityTitle.Size = UDim2.new(1, 0, 0, 24)
+            Position = UDim2.fromOffset(88, 0), Size = UDim2.new(1, -88, 1, 0), Parent = communityGroup })
+        local communityTitle = label(communityInfo, "Comunidade Michigun", 24, false)
+        communityTitle.Position = UDim2.fromOffset(0, 0)
+        communityTitle.Size = UDim2.new(1, 0, 0, 32)
         communityTitle.TextXAlignment = Enum.TextXAlignment.Center
         communityTitle.RichText = false
         communityTitle.TextColor3 = communityPalette.Text
-        local memberCounts = label(communityInfo, "Carregando comunidade…", 12, true)
-        memberCounts.Position = UDim2.fromOffset(0, 30)
-        memberCounts.Size = UDim2.new(1, 0, 0, 34)
+        local communitySubtitle = label(communityInfo, "Converse com a comunidade no Discord", 13, true)
+        communitySubtitle.Position, communitySubtitle.Size = UDim2.fromOffset(0, 36), UDim2.new(1, 0, 0, 20)
+        communitySubtitle.TextXAlignment = Enum.TextXAlignment.Center
+        communitySubtitle.TextColor3 = communityPalette.Muted
+        communitySubtitle.TextWrapped, communitySubtitle.TextTruncate = true, Enum.TextTruncate.None
+        local memberCounts = label(communityInfo, "Carregando comunidade…", 14, true)
+        memberCounts.Position = UDim2.fromOffset(0, 64)
+        memberCounts.Size = UDim2.new(1, 0, 0, 26)
         memberCounts.TextXAlignment = Enum.TextXAlignment.Center
         memberCounts.TextWrapped = true
         memberCounts.TextTruncate = Enum.TextTruncate.None
         memberCounts.TextColor3 = communityPalette.Muted
         local invite = card("CopyDiscordInvite", community, nil, true)
         invite.AnchorPoint = Vector2.new(0.5, 0)
-        invite.Position = UDim2.new(0.5, 0, 0, 94)
-        invite.Size = UDim2.new(1, -32, 0, 44)
-        createInstance("UISizeConstraint", { MaxSize = Vector2.new(180, 44), Parent = invite })
+        invite.Position = UDim2.new(0.5, 0, 0, 148)
+        invite.Size = UDim2.new(1, -32, 0, 48)
+        createInstance("UISizeConstraint", { MaxSize = Vector2.new(220, 48), Parent = invite })
         invite.BackgroundColor3 = communityPalette.Invite
         invite.BackgroundTransparency = 0
         local inviteBorder = invite:FindFirstChildWhichIsA("UIStroke")
         inviteBorder.Color = communityPalette.InviteHover
         inviteBorder.Transparency = 0.4
-        local inviteLabel = label(invite, "Copiar convite", 13, false)
+        local inviteLabel = label(invite, "Copiar convite", 14, false)
         inviteLabel.Size = UDim2.fromScale(1, 1)
         inviteLabel.TextXAlignment = Enum.TextXAlignment.Center
         inviteLabel.TextColor3 = communityPalette.InviteText
@@ -2807,6 +2815,21 @@ local Airflow = (function()
             width = math.floor(width + 0.5)
             if width <= 0 then return end
             local compact = width < 430
+            local stackCommunity = width < 360
+            community.Size = UDim2.new(1, 0, 0, stackCommunity and 280 or 216)
+            communityGroup.Size = UDim2.new(1, stackCommunity and -24 or -40, 0, stackCommunity and 184 or 104)
+            communityGroup.Position = UDim2.new(0.5, 0, 0, stackCommunity and 16 or 20)
+            communityConstraint.MaxSize = Vector2.new(480, stackCommunity and 184 or 104)
+            communityIcon.Size = UDim2.fromOffset(stackCommunity and 56 or 72, stackCommunity and 56 or 72)
+            communityIcon.AnchorPoint = stackCommunity and Vector2.new(0.5, 0) or Vector2.new(0, 0.5)
+            communityIcon.Position = stackCommunity and UDim2.fromScale(0.5, 0) or UDim2.fromScale(0, 0.5)
+            communityInfo.Position = UDim2.fromOffset(stackCommunity and 0 or 88, stackCommunity and 68 or 0)
+            communityInfo.Size = stackCommunity and UDim2.new(1, 0, 0, 116) or UDim2.new(1, -88, 1, 0)
+            communityTitle.TextSize = stackCommunity and 22 or 24
+            communitySubtitle.Position = UDim2.fromOffset(0, 36)
+            communitySubtitle.Size = UDim2.new(1, 0, 0, stackCommunity and 32 or 20)
+            memberCounts.Position = UDim2.fromOffset(0, stackCommunity and 76 or 64)
+            invite.Position = UDim2.new(0.5, 0, 0, stackCommunity and 216 or 148)
             local leftWidth = compact and width or width - 174
             local verticalBadges = badgeRow and leftWidth < 330
             local welcomeHeight = verticalBadges and 130 or 106
@@ -2899,8 +2922,35 @@ local Airflow = (function()
         end
         table.insert(self._connections, list:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout))
         table.insert(self._connections, fps:GetPropertyChangedSignal("Text"):Connect(paintGauge))
-        self:_listen("Render", function()
+        local communityMotionTime, lastCommunityMotion = 0, 0
+        local communityReducedMotion = false
+        local function updateCommunityMotionPreference()
+            local ok, reduced = pcall(function() return GuiService.ReducedMotionEnabled end)
+            communityReducedMotion = ok and reduced == true
+            if communityReducedMotion then
+                communityGradient.Offset, communityGradient.Rotation = Vector2.zero, 18
+            end
+        end
+        updateCommunityMotionPreference()
+        local motionSignalOk, motionSignal = pcall(function() return GuiService:GetPropertyChangedSignal("ReducedMotionEnabled") end)
+        if motionSignalOk then
+            table.insert(self._connections, motionSignal:Connect(updateCommunityMotionPreference))
+        end
+        self:_listen("Render", function(delta)
             if self.Open and self.Gui.Enabled and self.CurrentTab == tab then
+                local now = os.clock()
+                local top = community.AbsolutePosition.Y
+                local visible = top + community.AbsoluteSize.Y > list.AbsolutePosition.Y
+                    and top < list.AbsolutePosition.Y + list.AbsoluteSize.Y
+                if visible and not communityReducedMotion then
+                    communityMotionTime += tonumber(delta) or 0
+                    if now - lastCommunityMotion >= 1 / 30 then
+                        lastCommunityMotion = now
+                        local phase = communityMotionTime * math.pi / 7
+                        communityGradient.Offset = Vector2.new(math.sin(phase) * 0.18, math.cos(phase) * 0.08)
+                        communityGradient.Rotation = 18 + math.sin(phase * 0.7) * 12
+                    end
+                end
                 paintGauge()
                 if os.clock() >= nextCommunityRefresh then refreshCommunity() end
             end
