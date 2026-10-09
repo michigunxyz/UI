@@ -2661,11 +2661,11 @@ local Airflow = (function()
         local community = card("CommunityCard", list, 3)
         community.Size = UDim2.new(1, 0, 0, 154)
         local communityPalette = {
-            Blurple = Color3.fromRGB(88, 101, 242),
-            Surface = Color3.fromRGB(61, 68, 154),
-            SurfaceLow = Color3.fromRGB(36, 40, 87),
-            Text = Color3.fromRGB(246, 247, 255),
-            Muted = Color3.fromRGB(203, 208, 245),
+            Blurple = Color3.fromRGB(156, 128, 255),
+            Surface = Color3.fromRGB(102, 68, 218),
+            SurfaceLow = Color3.fromRGB(65, 45, 150),
+            Text = Color3.fromRGB(251, 250, 255),
+            Muted = Color3.fromRGB(235, 228, 255),
             Invite = Color3.fromRGB(84, 218, 148),
             InviteHover = Color3.fromRGB(108, 233, 167),
             InvitePressed = Color3.fromRGB(63, 187, 125),
@@ -2674,14 +2674,14 @@ local Airflow = (function()
         community.BackgroundColor3 = Color3.new(1, 1, 1)
         community.BackgroundTransparency = 0
         createInstance("UIGradient", { Color = ColorSequence.new(communityPalette.Surface, communityPalette.SurfaceLow),
-            Rotation = 20, Parent = community })
+            Rotation = 12, Parent = community })
         local communityBorder = community:FindFirstChildWhichIsA("UIStroke")
         communityBorder.Color = communityPalette.Blurple
-        communityBorder.Transparency = 0.25
+        communityBorder.Transparency = 0.12
         local communityGlow = createInstance("ImageLabel", { Name = "CommunityGlow",
-            Position = UDim2.fromOffset(-18, -16), Size = UDim2.new(1, 36, 1, 36),
+            Position = UDim2.fromOffset(-22, -20), Size = UDim2.new(1, 44, 1, 44),
             BackgroundTransparency = 1, Image = nativeAssets.Shadow,
-            ImageColor3 = communityPalette.Blurple, ImageTransparency = 0.55,
+            ImageColor3 = communityPalette.Blurple, ImageTransparency = 0.36,
             ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(49, 49, 450, 450),
             ZIndex = 0, Active = false, Selectable = false, Parent = community })
         communityGlow:SetAttribute("UIUnthemed", true)
