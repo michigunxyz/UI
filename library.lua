@@ -4721,6 +4721,241 @@ local AdapterFactory = (function()
             end
             return section
         end
+        function ContainerMethods:Chat(config)
+            config = config or {}
+            local frame = new("Frame", { Name = "AssistantChat", Size = UDim2.new(1, 0, 0, 400),
+                BackgroundColor3 = Airflow.Theme.Surface, BorderSizePixel = 0,
+                LayoutOrder = self._provider:_nextOrder(), Parent = self._provider.List })
+            frame:SetAttribute("NoDrag", true)
+            new("UICorner", { CornerRadius = UDim.new(0, 12), Parent = frame })
+            new("UIStroke", { Color = Airflow.Theme.Stroke, Parent = frame })
+            local handle = wrapControl(self, "Chat", config, { _frame = frame })
+            handle._messages, handle._busy = {}, false
+            local function text(parent, value, size, muted, bold)
+                return new("TextLabel", { BackgroundTransparency = 1, Text = value, TextSize = size,
+                    FontFace = bold and Airflow.Fonts.Bold or Airflow.Fonts.Regular,
+                    TextColor3 = muted and Airflow.Theme.Muted or Airflow.Theme.Text,
+                    TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Center,
+                    TextTruncate = Enum.TextTruncate.AtEnd, RichText = false, Parent = parent })
+            end
+            local function corner(parent, radius)
+                new("UICorner", { CornerRadius = UDim.new(0, radius), Parent = parent })
+            end
+            local function bind(owner, signal, callback)
+                owner._connections[#owner._connections + 1] = connect(signal, callback)
+            end
+            local title = text(frame, "Assistente", 16, false, true)
+            title.Position, title.Size = UDim2.fromOffset(16, 10), UDim2.new(1, -112, 0, 24)
+            local contextLabel = text(frame, "Conversa livre", 11, true)
+            contextLabel.Position, contextLabel.Size = UDim2.fromOffset(16, 34), UDim2.new(1, -112, 0, 18)
+            local function button(parent, caption, width)
+                local result = new("TextButton", { Text = caption, FontFace = Airflow.Fonts.Medium,
+                    TextSize = 12, TextColor3 = Airflow.Theme.Text, BackgroundColor3 = Airflow.Theme.Surface3,
+                    BorderSizePixel = 0, AutoButtonColor = false, Selectable = true,
+                    Size = UDim2.new(0, width, 0, 44), Parent = parent })
+                result:SetAttribute("NoDrag", true)
+                corner(result, 10)
+                return result
+            end
+            local clear = button(frame, "Limpar", 76)
+            clear.AnchorPoint, clear.Position = Vector2.new(1, 0), UDim2.new(1, -12, 0, 10)
+            local messages = new("ScrollingFrame", { Name = "Messages", Position = UDim2.fromOffset(0, 62),
+                Size = UDim2.new(1, 0, 1, -174), BackgroundTransparency = 1, BorderSizePixel = 0,
+                ScrollBarThickness = 3, ScrollBarImageColor3 = Airflow.Theme.StrokeHover,
+                ScrollingDirection = Enum.ScrollingDirection.Y, AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                CanvasSize = UDim2.new(), ClipsDescendants = true, Parent = frame })
+            local messageLayout = new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder,
+                Padding = UDim.new(0, 20), Parent = messages })
+            new("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 16),
+                PaddingLeft = UDim.new(0, 16), PaddingRight = UDim.new(0, 16), Parent = messages })
+            local empty = new("Frame", { Name = "EmptyConversation", BackgroundTransparency = 1,
+                Position = UDim2.fromOffset(20, 62), Size = UDim2.new(1, -40, 1, -174), Parent = frame })
+            local emptyTitle = text(empty, "Como posso ajudar?", 19, false, true)
+            emptyTitle.AnchorPoint, emptyTitle.Position = Vector2.new(0.5, 0.5), UDim2.fromScale(0.5, 0.4)
+            emptyTitle.Size, emptyTitle.TextXAlignment = UDim2.new(1, 0, 0, 30), Enum.TextXAlignment.Center
+            local emptyDesc = text(empty, "Faça uma pergunta ou use um documento como referência.", 12, true)
+            emptyDesc.AnchorPoint, emptyDesc.Position = Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0.4, 24)
+            emptyDesc.Size, emptyDesc.TextWrapped = UDim2.new(1, 0, 0, 44), true
+            emptyDesc.TextXAlignment, emptyDesc.TextTruncate = Enum.TextXAlignment.Center, Enum.TextTruncate.None
+            local composer = new("Frame", { Name = "Composer", AnchorPoint = Vector2.new(0, 1),
+                Position = UDim2.new(0, 12, 1, -30), Size = UDim2.new(1, -24, 0, 72),
+                BackgroundColor3 = Airflow.Theme.Surface2, BorderSizePixel = 0, Parent = frame })
+            corner(composer, 12)
+            local inputBorder = new("UIStroke", { Color = Airflow.Theme.Stroke, Parent = composer })
+            local draftScroll = new("ScrollingFrame", { Name = "Draft", Position = UDim2.fromOffset(12, 10),
+                Size = UDim2.new(1, -76, 1, -20), BackgroundTransparency = 1, BorderSizePixel = 0,
+                CanvasSize = UDim2.new(), AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                ScrollingDirection = Enum.ScrollingDirection.Y, ScrollBarThickness = 2,
+                ScrollBarImageColor3 = Airflow.Theme.StrokeHover, Parent = composer })
+            local input = new("TextBox", { Name = "MessageInput",
+                Size = UDim2.new(1, -4, 0, 52), AutomaticSize = Enum.AutomaticSize.Y,
+                BackgroundTransparency = 1, ClearTextOnFocus = false,
+                Text = "", PlaceholderText = "Escreva sua mensagem…", MultiLine = true, TextWrapped = true,
+                TextSize = 14, FontFace = Airflow.Fonts.Regular, TextColor3 = Airflow.Theme.Text,
+                PlaceholderColor3 = Airflow.Theme.Muted, TextXAlignment = Enum.TextXAlignment.Left,
+                TextYAlignment = Enum.TextYAlignment.Top, Parent = draftScroll })
+            input:SetAttribute("NoDrag", true)
+            local send = button(composer, "Enviar", 56)
+            send.AnchorPoint, send.Position = Vector2.new(1, 0.5), UDim2.new(1, -8, 0.5, 0)
+            local hint = text(frame, Airflow.Touch and "Toque em Enviar para conversar" or "Ctrl + Enter para enviar", 10, true)
+            hint.AnchorPoint, hint.Position = Vector2.new(0, 1), UDim2.new(0, 16, 1, -6)
+            hint.Size = UDim2.new(1, -32, 0, 18)
+            local function refreshSend()
+                send.Interactable = not handle._busy and input.Text:match("%S") ~= nil
+                send.BackgroundTransparency = send.Interactable and 0 or 0.4
+            end
+            bind(handle, input:GetPropertyChangedSignal("Text"), refreshSend)
+            refreshSend()
+            local followTail, messageOrder, confirmingClear = true, 0, false
+            local function scrollToEnd()
+                task.defer(function()
+                    if handle._destroyed or not followTail then return end
+                    messages.CanvasPosition = Vector2.new(0, math.max(0, messages.AbsoluteCanvasSize.Y - messages.AbsoluteWindowSize.Y))
+                end)
+            end
+            bind(handle, messages:GetPropertyChangedSignal("CanvasPosition"), function()
+                followTail = messages.AbsoluteCanvasSize.Y - messages.AbsoluteWindowSize.Y - messages.CanvasPosition.Y < 36
+            end)
+            bind(handle, messages:GetPropertyChangedSignal("AbsoluteCanvasSize"), scrollToEnd)
+            local function resize()
+                if handle._destroyed then return end
+                local page = handle._context._window._native.Content
+                local scale = handle._context._window._native.Scale
+                local height = page.AbsoluteSize.Y / (scale and scale.Scale > 0 and scale.Scale or 1)
+                frame.Size = UDim2.new(1, 0, 0, math.clamp(height - 72, 300, 480))
+            end
+            bind(handle, self._window._native.Content:GetPropertyChangedSignal("AbsoluteSize"), resize)
+            resize()
+            function handle:SetContext(value)
+                contextLabel.Text = tostring(value or "Conversa livre")
+                return self
+            end
+            function handle:SetInput(value)
+                input.Text = tostring(value or "")
+                return self
+            end
+            function handle:AddMessage(message)
+                if self._destroyed then return end
+                message = message or {}
+                messageOrder += 1
+                empty.Visible = false
+                local isUser = message.Role == "user"
+                local row = new("Frame", { Name = isUser and "UserMessage" or "AssistantMessage",
+                    BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y, LayoutOrder = messageOrder, Parent = messages })
+                local entry = wrapControl(self, "ChatMessage", message, { _frame = row })
+                self._messages[#self._messages + 1] = entry
+                local body = new("Frame", { BackgroundColor3 = Airflow.Theme.Surface3,
+                    BackgroundTransparency = isUser and 0 or 1, BorderSizePixel = 0,
+                    AnchorPoint = Vector2.new(isUser and 1 or 0, 0),
+                    Position = UDim2.fromScale(isUser and 1 or 0, 0),
+                    Size = UDim2.new(isUser and 0.92 or 1, 0, 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y, Parent = row })
+                corner(body, 12)
+                new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8), Parent = body })
+                if isUser then
+                    new("UIPadding", { PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, 12),
+                        PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), Parent = body })
+                end
+                local author = text(body, isUser and "Você" or message.Error and "Não foi possível responder" or "Assistente", 11, true, true)
+                author.Size, author.LayoutOrder = UDim2.new(1, 0, 0, 18), 1
+                if isUser then author.TextColor3 = Airflow.Theme.Text end
+                local rawText = tostring(message.Text or "")
+                local content = text(body, rawText, 14, false)
+                content.Size, content.AutomaticSize = UDim2.new(1, 0, 0, 0), Enum.AutomaticSize.Y
+                content.TextWrapped, content.TextTruncate = true, Enum.TextTruncate.None
+                content.TextYAlignment, content.LayoutOrder = Enum.TextYAlignment.Top, 2
+                if not isUser and not message.Pending then
+                    local formatted = rawText:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+                    formatted = formatted:gsub("%*%*(.-)%*%*", "<b>%1</b>")
+                    formatted = formatted:gsub("^#+%s+([^\n]+)", "<b>%1</b>"):gsub("\n#+%s+([^\n]+)", "\n<b>%1</b>")
+                    content.RichText, content.Text = true, formatted
+                end
+                if type(message.Code) == "string" and message.Code ~= "" then
+                    local codeFrame = new("Frame", { Size = UDim2.new(1, 0, 0, 194),
+                        BackgroundColor3 = Airflow.Theme.Surface2, BorderSizePixel = 0, LayoutOrder = 3, Parent = body })
+                    corner(codeFrame, 10)
+                    local copyCode = button(codeFrame, "Copiar código", 120)
+                    copyCode.Position = UDim2.fromOffset(8, 4)
+                    local codeScroll = new("ScrollingFrame", { Position = UDim2.fromOffset(12, 52),
+                        Size = UDim2.new(1, -24, 1, -64), BackgroundTransparency = 1, BorderSizePixel = 0,
+                        CanvasSize = UDim2.new(), AutomaticCanvasSize = Enum.AutomaticSize.XY,
+                        ScrollBarThickness = 3, ScrollBarImageColor3 = Airflow.Theme.StrokeHover, Parent = codeFrame })
+                    new("TextBox", { Text = message.Code, TextEditable = false, MultiLine = true, ClearTextOnFocus = false,
+                        BackgroundTransparency = 1, Size = UDim2.fromOffset(0, 0), AutomaticSize = Enum.AutomaticSize.XY,
+                        FontFace = Font.new("rbxasset://fonts/families/RobotoMono.json"), TextSize = 12,
+                        TextColor3 = Airflow.Theme.Text, TextXAlignment = Enum.TextXAlignment.Left,
+                        TextYAlignment = Enum.TextYAlignment.Top, Parent = codeScroll })
+                    bind(entry, copyCode.Activated, function() call(message.CopyCode, message.Code) end)
+                end
+                if not isUser and not message.Pending then
+                    local actions = new("Frame", { Size = UDim2.new(1, 0, 0, 44), BackgroundTransparency = 1,
+                        LayoutOrder = 4, Parent = body })
+                    local copy = button(actions, "Copiar", 0)
+                    copy.Size = UDim2.new(0.5, -4, 0, 44)
+                    local gameChat = button(actions, "Enviar no chat", 0)
+                    gameChat.Position, gameChat.Size = UDim2.new(0.5, 4, 0, 0), UDim2.new(0.5, -4, 0, 44)
+                    bind(entry, copy.Activated, function() call(message.Copy, rawText) end)
+                    bind(entry, gameChat.Activated, function() call(message.SendToChat, rawText) end)
+                end
+                if isUser or message.Pending then followTail = true end
+                scrollToEnd()
+                return entry
+            end
+            function handle:SetBusy(value)
+                if self._destroyed then return self end
+                self._busy = value == true
+                clear.Interactable = not self._busy
+                send.Text = self._busy and "…" or "Enviar"
+                refreshSend()
+                hint.Text = self._busy and "Preparando a resposta…"
+                    or Airflow.Touch and "Toque em Enviar para conversar" or "Ctrl + Enter para enviar"
+                if self._busy and not self._pending then
+                    self._pending = self:AddMessage({ Text = "Pensando…", Pending = true })
+                elseif not self._busy and self._pending then
+                    local index = table.find(self._messages, self._pending)
+                    if index then table.remove(self._messages, index) end
+                    self._pending:Destroy()
+                    self._pending = nil
+                end
+                return self
+            end
+            function handle:Clear()
+                if self._destroyed or self._busy then return self end
+                for _, entry in ipairs(self._messages) do entry:Destroy() end
+                table.clear(self._messages)
+                self._pending, messageOrder, confirmingClear = nil, 0, false
+                clear.Text, empty.Visible, followTail = "Limpar", true, true
+                messages.CanvasPosition = Vector2.zero
+                return self
+            end
+            local function submit()
+                if handle._destroyed or handle._busy then return end
+                local value = input.Text:match("^%s*(.-)%s*$")
+                if value == "" then return end
+                call(config.OnSend, value)
+            end
+            bind(handle, send.Activated, submit)
+            bind(handle, UserInput.InputBegan, function(event)
+                if UserInput:GetFocusedTextBox() == input and event.KeyCode == Enum.KeyCode.Return
+                    and (UserInput:IsKeyDown(Enum.KeyCode.LeftControl) or UserInput:IsKeyDown(Enum.KeyCode.RightControl)) then submit() end
+            end)
+            bind(handle, input.Focused, function() inputBorder.Color = Airflow.Theme.StrokeHover end)
+            bind(handle, input.FocusLost, function() inputBorder.Color = Airflow.Theme.Stroke end)
+            bind(handle, clear.Activated, function()
+                if handle._busy or #handle._messages == 0 then return end
+                if confirmingClear then
+                    handle:Clear()
+                    call(config.OnClear)
+                else
+                    confirmingClear, clear.Text = true, "Confirmar"
+                    task.delay(4, function()
+                        if not handle._destroyed then confirmingClear, clear.Text = false, "Limpar" end
+                    end)
+                end
+            end)
+            return handle
+        end
         function ContainerMethods:Code(config)
             config = type(config) == "table" and config or { Code = tostring(config or "") }
             local frame = new("Frame", {
