@@ -2645,16 +2645,42 @@ local Airflow = (function()
         ping.TextXAlignment = Enum.TextXAlignment.Left
         local community = card("CommunityCard", list, 3)
         community.Size = UDim2.new(1, 0, 0, 154)
+        local communityPalette = {
+            Blurple = Color3.fromRGB(88, 101, 242),
+            Surface = Color3.fromRGB(61, 68, 154),
+            SurfaceLow = Color3.fromRGB(36, 40, 87),
+            Text = Color3.fromRGB(246, 247, 255),
+            Muted = Color3.fromRGB(203, 208, 245),
+            Invite = Color3.fromRGB(84, 218, 148),
+            InviteHover = Color3.fromRGB(108, 233, 167),
+            InvitePressed = Color3.fromRGB(63, 187, 125),
+            InviteText = Color3.fromRGB(12, 37, 25),
+        }
+        community.BackgroundColor3 = Color3.new(1, 1, 1)
+        community.BackgroundTransparency = 0
+        createInstance("UIGradient", { Color = ColorSequence.new(communityPalette.Surface, communityPalette.SurfaceLow),
+            Rotation = 20, Parent = community })
+        local communityBorder = community:FindFirstChildWhichIsA("UIStroke")
+        communityBorder.Color = communityPalette.Blurple
+        communityBorder.Transparency = 0.25
+        local communityGlow = createInstance("ImageLabel", { Name = "CommunityGlow",
+            Position = UDim2.fromOffset(-18, -16), Size = UDim2.new(1, 36, 1, 36),
+            BackgroundTransparency = 1, Image = nativeAssets.Shadow,
+            ImageColor3 = communityPalette.Blurple, ImageTransparency = 0.55,
+            ScaleType = Enum.ScaleType.Slice, SliceCenter = Rect.new(49, 49, 450, 450),
+            ZIndex = 0, Active = false, Selectable = false, Parent = community })
+        communityGlow:SetAttribute("UIUnthemed", true)
         local communityGroup = createInstance("Frame", { Name = "CommunityIdentity", BackgroundTransparency = 1,
             AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 16),
             Size = UDim2.new(1, -32, 0, 64), Parent = community })
         createInstance("UISizeConstraint", { MaxSize = Vector2.new(360, 64), Parent = communityGroup })
         local communityIcon = createInstance("ImageLabel", { Name = "CommunityAvatar", Size = UDim2.fromOffset(56, 56),
             AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.fromScale(0, 0.5),
-            BackgroundColor3 = nativeTheme2.Surface3, BorderSizePixel = 0, Parent = communityGroup })
+            BackgroundColor3 = communityPalette.SurfaceLow, BorderSizePixel = 0, Parent = communityGroup })
         communityIcon:SetAttribute("UIUnthemed", true)
         addCorner(communityIcon, UDim.new(0, 12))
-        local placeholderIcon = createIcon(communityIcon, "messages-square", nativeTheme2.Text, UDim2.new(0.5, -8, 0.5, 0))
+        local placeholderIcon = createIcon(communityIcon, "messages-square", communityPalette.Text, UDim2.new(0.5, -8, 0.5, 0))
+        placeholderIcon:SetAttribute("UIUnthemed", true)
         local communityInfo = createInstance("Frame", { Name = "CommunityInfo", BackgroundTransparency = 1,
             Position = UDim2.fromOffset(72, 0), Size = UDim2.new(1, -72, 1, 0), Parent = communityGroup })
         local communityTitle = label(communityInfo, "Comunidade Michigun", 16, false)
@@ -2662,21 +2688,52 @@ local Airflow = (function()
         communityTitle.Size = UDim2.new(1, 0, 0, 24)
         communityTitle.TextXAlignment = Enum.TextXAlignment.Center
         communityTitle.RichText = false
+        communityTitle.TextColor3 = communityPalette.Text
         local memberCounts = label(communityInfo, "Carregando comunidade…", 12, true)
         memberCounts.Position = UDim2.fromOffset(0, 30)
         memberCounts.Size = UDim2.new(1, 0, 0, 34)
         memberCounts.TextXAlignment = Enum.TextXAlignment.Center
         memberCounts.TextWrapped = true
         memberCounts.TextTruncate = Enum.TextTruncate.None
+        memberCounts.TextColor3 = communityPalette.Muted
         local invite = card("CopyDiscordInvite", community, nil, true)
         invite.AnchorPoint = Vector2.new(0.5, 0)
         invite.Position = UDim2.new(0.5, 0, 0, 94)
         invite.Size = UDim2.new(1, -32, 0, 44)
         createInstance("UISizeConstraint", { MaxSize = Vector2.new(180, 44), Parent = invite })
-        invite.BackgroundColor3 = nativeTheme2.Surface3
-        local inviteLabel = label(invite, "Copiar convite", 12, false)
+        invite.BackgroundColor3 = communityPalette.Invite
+        invite.BackgroundTransparency = 0
+        local inviteBorder = invite:FindFirstChildWhichIsA("UIStroke")
+        inviteBorder.Color = communityPalette.InviteHover
+        inviteBorder.Transparency = 0.4
+        local inviteLabel = label(invite, "Copiar convite", 13, false)
         inviteLabel.Size = UDim2.fromScale(1, 1)
         inviteLabel.TextXAlignment = Enum.TextXAlignment.Center
+        inviteLabel.TextColor3 = communityPalette.InviteText
+        local inviteHovered, inviteFocused, invitePressed = false, false, false
+        local function updateInviteState()
+            local highlighted = inviteHovered or inviteFocused
+            animate(invite, { BackgroundColor3 = invitePressed and communityPalette.InvitePressed
+                or highlighted and communityPalette.InviteHover or communityPalette.Invite }, 0.12)
+            animate(inviteBorder, { Transparency = inviteFocused and 0 or 0.4,
+                Thickness = inviteFocused and 2 or 1 }, 0.12)
+        end
+        invite.MouseEnter:Connect(function() inviteHovered = true updateInviteState() end)
+        invite.MouseLeave:Connect(function() inviteHovered = false invitePressed = false updateInviteState() end)
+        invite.SelectionGained:Connect(function() inviteFocused = true updateInviteState() end)
+        invite.SelectionLost:Connect(function() inviteFocused = false invitePressed = false updateInviteState() end)
+        invite.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                invitePressed = true
+                updateInviteState()
+            end
+        end)
+        invite.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                invitePressed = false
+                updateInviteState()
+            end
+        end)
         invite.Activated:Connect(function()
             local handler = tab._homeActions.Discord
             if type(handler) == "function" then invokeCallback(handler) end
