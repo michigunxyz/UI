@@ -4922,26 +4922,30 @@ local AdapterFactory = (function()
             function handle:SetBusy(value)
                 if self._destroyed then return self end
                 self._busy = value == true
-                if self._documents then
-                    if self._busy then self._documents:Lock() else self._documents:Unlock() end
-                end
-                clear.Interactable = not self._busy
+                clear.Interactable = true
                 send.Text = self._busy and "…" or "Enviar"
                 refreshSend()
+                if self._documents then
+                    pcall(function()
+                        if self._busy then self._documents:Lock() else self._documents:Unlock() end
+                    end)
+                end
                 hint.Text = self._busy and "Preparando a resposta…"
                     or Airflow.Touch and "Toque em Enviar para conversar" or "Ctrl + Enter para enviar"
                 if self._busy and not self._pending then
-                    self._pending = self:AddMessage({ Text = "Pensando…", Pending = true })
+                    local ok, pending = pcall(self.AddMessage, self, { Text = "Pensando…", Pending = true })
+                    if ok then self._pending = pending end
                 elseif not self._busy and self._pending then
                     local index = table.find(self._messages, self._pending)
                     if index then table.remove(self._messages, index) end
-                    self._pending:Destroy()
+                    pcall(self._pending.Destroy, self._pending)
                     self._pending = nil
                 end
                 return self
             end
             function handle:Clear()
-                if self._destroyed or self._busy then return self end
+                if self._destroyed then return self end
+                self:SetBusy(false)
                 for _, entry in ipairs(self._messages) do entry:Destroy() end
                 table.clear(self._messages)
                 self._pending, messageOrder, confirmingClear = nil, 0, false
@@ -4963,10 +4967,10 @@ local AdapterFactory = (function()
             bind(handle, input.Focused, function() inputBorder.Color = Airflow.Theme.StrokeHover end)
             bind(handle, input.FocusLost, function() inputBorder.Color = Airflow.Theme.Stroke end)
             bind(handle, clear.Activated, function()
-                if handle._busy or #handle._messages == 0 then return end
+                if #handle._messages == 0 then return end
                 if confirmingClear then
-                    handle:Clear()
                     call(config.OnClear)
+                    handle:Clear()
                 else
                     confirmingClear, clear.Text = true, "Confirmar"
                     task.delay(4, function()
