@@ -2598,8 +2598,8 @@ local Airflow = (function()
         local job = label(session, "", 11, true)
         local jobID = tostring(game.JobId or "")
         job.Text = jobID ~= "" and "ID " .. jobID:sub(1, 8) .. "…" .. jobID:sub(-4) or "ID indisponível"
-        local playersIcon = createIcon(session, "users", nativeTheme2.Muted, UDim2.fromOffset(14, 82))
-        local uptimeIcon = createIcon(session, "timer", nativeTheme2.Muted, UDim2.fromOffset(120, 82))
+        local playersIcon = createIcon(session, "users", nativeTheme2.Muted, UDim2.fromOffset(14, 87))
+        local uptimeIcon = createIcon(session, "timer", nativeTheme2.Muted, UDim2.fromOffset(120, 87))
         playerCount.Position = UDim2.fromOffset(36, 76)
         playerCount.Size = UDim2.fromOffset(78, 22)
         uptime.Position = UDim2.fromOffset(142, 76)
@@ -2630,36 +2630,49 @@ local Airflow = (function()
         fpsCaption.Size = UDim2.new(1, -20, 0, 20)
         fpsCaption.TextXAlignment = Enum.TextXAlignment.Center
         local pingRow = createInstance("Frame", { Name = "PingRow", BackgroundTransparency = 1,
-            AnchorPoint = Vector2.new(0.5, 0.5), Size = UDim2.fromOffset(100, 22), Parent = performance })
+            AnchorPoint = Vector2.new(0.5, 0.5), Size = UDim2.new(1, -20, 0, 22), Parent = performance })
+        createInstance("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal,
+            HorizontalAlignment = Enum.HorizontalAlignment.Center, VerticalAlignment = Enum.VerticalAlignment.Center,
+            SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6), Parent = pingRow })
         local ping = moveValue(values.Ping, pingRow, 12)
         ping.TextXAlignment = Enum.TextXAlignment.Center
         local pingIcon = createIcon(pingRow, "wifi", nativeTheme2.Muted, UDim2.new(0, 0, 0.5, 0))
-        ping.Position = UDim2.fromOffset(24, 0)
-        ping.Size = UDim2.new(1, -24, 1, 0)
+        pingIcon.LayoutOrder = 1
+        ping.LayoutOrder = 2
+        ping.Size = UDim2.fromOffset(0, 22)
+        ping.AutomaticSize = Enum.AutomaticSize.X
+        ping.TextTruncate = Enum.TextTruncate.None
         ping.TextXAlignment = Enum.TextXAlignment.Left
         local community = card("CommunityCard", list, 3)
+        community.Size = UDim2.new(1, 0, 0, 154)
+        local communityGroup = createInstance("Frame", { Name = "CommunityIdentity", BackgroundTransparency = 1,
+            AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 16),
+            Size = UDim2.new(1, -32, 0, 64), Parent = community })
+        createInstance("UISizeConstraint", { MaxSize = Vector2.new(360, 64), Parent = communityGroup })
         local communityIcon = createInstance("ImageLabel", { Name = "CommunityAvatar", Size = UDim2.fromOffset(56, 56),
-            BackgroundColor3 = nativeTheme2.Surface3, BorderSizePixel = 0, Parent = community })
+            AnchorPoint = Vector2.new(0, 0.5), Position = UDim2.fromScale(0, 0.5),
+            BackgroundColor3 = nativeTheme2.Surface3, BorderSizePixel = 0, Parent = communityGroup })
         communityIcon:SetAttribute("UIUnthemed", true)
         addCorner(communityIcon, UDim.new(0, 12))
         local placeholderIcon = createIcon(communityIcon, "messages-square", nativeTheme2.Text, UDim2.new(0.5, -8, 0.5, 0))
-        local communityInfo = createInstance("Frame", { Name = "CommunityInfo", BackgroundTransparency = 1, Parent = community })
+        local communityInfo = createInstance("Frame", { Name = "CommunityInfo", BackgroundTransparency = 1,
+            Position = UDim2.fromOffset(72, 0), Size = UDim2.new(1, -72, 1, 0), Parent = communityGroup })
         local communityTitle = label(communityInfo, "Comunidade Michigun", 16, false)
-        communityTitle.Position = UDim2.fromOffset(0, 0)
+        communityTitle.Position = UDim2.fromOffset(0, 4)
         communityTitle.Size = UDim2.new(1, 0, 0, 24)
         communityTitle.TextXAlignment = Enum.TextXAlignment.Center
         communityTitle.RichText = false
-        local communityDesc = label(communityInfo, "Carregando informações do Discord…", 11, true)
-        communityDesc.Position = UDim2.fromOffset(0, 28)
-        communityDesc.Size = UDim2.new(1, 0, 0, 18)
-        communityDesc.TextXAlignment = Enum.TextXAlignment.Center
-        local memberCounts = label(communityInfo, "Online: —   ·   Membros: —", 12, true)
-        memberCounts.Position = UDim2.fromOffset(0, 53)
+        local memberCounts = label(communityInfo, "Carregando comunidade…", 12, true)
+        memberCounts.Position = UDim2.fromOffset(0, 30)
         memberCounts.Size = UDim2.new(1, 0, 0, 34)
         memberCounts.TextXAlignment = Enum.TextXAlignment.Center
         memberCounts.TextWrapped = true
         memberCounts.TextTruncate = Enum.TextTruncate.None
         local invite = card("CopyDiscordInvite", community, nil, true)
+        invite.AnchorPoint = Vector2.new(0.5, 0)
+        invite.Position = UDim2.new(0.5, 0, 0, 94)
+        invite.Size = UDim2.new(1, -32, 0, 44)
+        createInstance("UISizeConstraint", { MaxSize = Vector2.new(180, 44), Parent = invite })
         invite.BackgroundColor3 = nativeTheme2.Surface3
         local inviteLabel = label(invite, "Copiar convite", 12, false)
         inviteLabel.Size = UDim2.fromScale(1, 1)
@@ -2714,6 +2727,12 @@ local Airflow = (function()
                 ancestor = ancestor.Parent
             end
             local width = list.AbsoluteSize.X / scale
+            local padding = list:FindFirstChildWhichIsA("UIPadding")
+            if padding then
+                width = width * (1 - padding.PaddingLeft.Scale - padding.PaddingRight.Scale)
+                    - padding.PaddingLeft.Offset - padding.PaddingRight.Offset
+            end
+            width = math.floor(width + 0.5)
             if width <= 0 then return end
             local compact = width < 430
             local leftWidth = compact and width or width - 174
@@ -2724,25 +2743,28 @@ local Airflow = (function()
                 if badgeLayout then badgeLayout.FillDirection = verticalBadges and Enum.FillDirection.Vertical or Enum.FillDirection.Horizontal end
             end
             welcome.Position = UDim2.fromOffset(0, 0)
-            welcome.Size = UDim2.fromOffset(leftWidth, welcomeHeight)
+            welcome.Size = UDim2.new(1, compact and 0 or -174, 0, welcomeHeight)
             session.Position = UDim2.fromOffset(0, welcomeHeight + 10)
-            session.Size = UDim2.fromOffset(leftWidth, 130)
+            session.Size = UDim2.new(1, compact and 0 or -174, 0, 130)
             local topHeight = welcomeHeight + 140
             if compact then
+                performance.AnchorPoint = Vector2.zero
                 performance.Position = UDim2.fromOffset(0, topHeight + 10)
-                performance.Size = UDim2.fromOffset(width, 132)
+                performance.Size = UDim2.new(1, 0, 0, 132)
                 topHeight += 142
                 ring.Position = UDim2.fromOffset(8, 11)
                 ring.Size = UDim2.fromOffset(110, 110)
                 performanceTitle.Position = UDim2.fromOffset(128, 20)
                 performanceTitle.Size = UDim2.new(1, -142, 0, 24)
-                performanceTitle.TextXAlignment = Enum.TextXAlignment.Left
+                performanceTitle.TextXAlignment = Enum.TextXAlignment.Center
                 fpsCaption.Position = UDim2.fromOffset(128, 48)
                 fpsCaption.Size = UDim2.new(1, -142, 0, 28)
                 fpsCaption.TextWrapped = true
                 pingRow.Position = UDim2.new(0.5, 57, 0, 99)
+                pingRow.Size = UDim2.new(1, -142, 0, 22)
             else
-                performance.Position = UDim2.fromOffset(leftWidth + 10, 0)
+                performance.AnchorPoint = Vector2.new(1, 0)
+                performance.Position = UDim2.fromScale(1, 0)
                 performance.Size = UDim2.fromOffset(164, topHeight)
                 ring.Position = UDim2.new(0.5, -60, 0, 51)
                 ring.Size = UDim2.fromOffset(120, 120)
@@ -2753,27 +2775,9 @@ local Airflow = (function()
                 fpsCaption.Size = UDim2.new(1, -20, 0, 20)
                 fpsCaption.TextWrapped = false
                 pingRow.Position = UDim2.new(0.5, 0, 0, topHeight - 29)
+                pingRow.Size = UDim2.new(1, -20, 0, 22)
             end
             top.Size = UDim2.new(1, 0, 0, topHeight)
-            local stackedCommunity = width < 560
-            community.Size = UDim2.new(1, 0, 0, stackedCommunity and 218 or 122)
-            if stackedCommunity then
-                communityIcon.AnchorPoint = Vector2.new(0.5, 0)
-                communityIcon.Position = UDim2.new(0.5, 0, 0, 14)
-                communityInfo.Position = UDim2.fromOffset(14, 80)
-                communityInfo.Size = UDim2.new(1, -28, 0, 82)
-                invite.AnchorPoint = Vector2.new(0, 0)
-                invite.Position = UDim2.fromOffset(14, 170)
-                invite.Size = UDim2.new(1, -28, 0, 36)
-            else
-                communityIcon.AnchorPoint = Vector2.new(0, 0.5)
-                communityIcon.Position = UDim2.new(0, 16, 0.5, 0)
-                communityInfo.Position = UDim2.fromOffset(88, 18)
-                communityInfo.Size = UDim2.new(1, -234, 0, 86)
-                invite.AnchorPoint = Vector2.new(1, 0.5)
-                invite.Position = UDim2.new(1, -14, 0.5, 0)
-                invite.Size = UDim2.fromOffset(118, 44)
-            end
             actions.Size = UDim2.new(1, 0, 0, compact and 266 or 82)
             for index, definition in ipairs(definitions) do
                 local control = tab._dashboardControls[definition.Id]
@@ -2791,7 +2795,7 @@ local Airflow = (function()
         local function refreshCommunity()
             if communityPending then return end
             if type(config.CommunityProvider) ~= "function" then
-                communityDesc.Text = "Informações da comunidade indisponíveis"
+                memberCounts.Text = "Comunidade indisponível"
                 return
             end
             communityPending = true
@@ -2802,8 +2806,9 @@ local Airflow = (function()
                 if self._destroyed or not community.Parent then return end
                 if not success or type(data) ~= "table" then data = { Status = "Dados da comunidade indisponíveis" } end
                 if type(data.Name) == "string" and data.Name ~= "" then communityTitle.Text = data.Name end
-                communityDesc.Text = data.Status or "Contagens estimadas pelo Discord"
-                memberCounts.Text = formatCount(data.Online) .. " online   ·   " .. formatCount(data.Members) .. " membros"
+                memberCounts.Text = type(data.Name) == "string" and data.Name ~= ""
+                    and formatCount(data.Online) .. " online   ·   " .. formatCount(data.Members) .. " membros"
+                    or data.Status or "Comunidade indisponível"
                 if type(data.Image) == "string" and data.Image ~= "" then
                     communityIcon.Image = data.Image
                     placeholderIcon.Visible = false
@@ -2811,12 +2816,6 @@ local Airflow = (function()
             end)
         end
         tab._refreshCommunity = refreshCommunity
-        local function centerPing()
-            if not pingRow.Parent then return end
-            local textWidth = ping.TextBounds.X
-            pingRow.Size = UDim2.fromOffset(math.max(1, textWidth) + 24, 22)
-        end
-        table.insert(self._connections, ping:GetPropertyChangedSignal("TextBounds"):Connect(centerPing))
         if self.Scale then table.insert(self._connections, self.Scale:GetPropertyChangedSignal("Scale"):Connect(layout)) end
         local lastFPS, lastTheme
         local function paintGauge()
@@ -2837,7 +2836,6 @@ local Airflow = (function()
         tab._dashboardLayout = layout
         layout()
         paintGauge()
-        centerPing()
         refreshCommunity()
     end
     function NativeWindow:_buildHome(configuration123)
