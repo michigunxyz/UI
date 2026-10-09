@@ -4730,6 +4730,7 @@ local AdapterFactory = (function()
             new("UICorner", { CornerRadius = UDim.new(0, 12), Parent = frame })
             new("UIStroke", { Color = Airflow.Theme.Stroke, Parent = frame })
             local handle = wrapControl(self, "Chat", config, { _frame = frame })
+            handle._window = self._window
             handle._messages, handle._busy = {}, false
             local function text(parent, value, size, muted, bold)
                 return new("TextLabel", { BackgroundTransparency = 1, Text = value, TextSize = size,
@@ -4759,6 +4760,9 @@ local AdapterFactory = (function()
             end
             local clear = button(frame, "Limpar", 76)
             clear.AnchorPoint, clear.Position = Vector2.new(1, 0), UDim2.new(1, -12, 0, 10)
+            local documentRow = new("Frame", { Name = "ChatDocument", Position = UDim2.fromOffset(12, 62),
+                Size = UDim2.new(1, -24, 0, Airflow.Touch and 54 or 48),
+                BackgroundTransparency = 1, Visible = false, Parent = frame })
             local messages = new("ScrollingFrame", { Name = "Messages", Position = UDim2.fromOffset(0, 62),
                 Size = UDim2.new(1, 0, 1, -174), BackgroundTransparency = 1, BorderSizePixel = 0,
                 ScrollBarThickness = 3, ScrollBarImageColor3 = Airflow.Theme.StrokeHover,
@@ -4826,6 +4830,19 @@ local AdapterFactory = (function()
             end
             bind(handle, self._window._native.Content:GetPropertyChangedSignal("AbsoluteSize"), resize)
             resize()
+            function handle:Documents(options)
+                if self._documents then return self._documents end
+                options = table.clone(options or {})
+                options.Title, options.Desc = "Documento", nil
+                options.SearchBarEnabled = true
+                local documentsContext = context(self, provider(self._context, documentRow), documentRow)
+                self._documents = ContainerMethods.Dropdown(documentsContext, options)
+                documentRow.Visible = true
+                local offset = 62 + (Airflow.Touch and 54 or 48) + 8
+                messages.Position, messages.Size = UDim2.fromOffset(0, offset), UDim2.new(1, 0, 1, -(offset + 112))
+                empty.Position, empty.Size = UDim2.fromOffset(20, offset), UDim2.new(1, -40, 1, -(offset + 112))
+                return self._documents
+            end
             function handle:SetContext(value)
                 contextLabel.Text = tostring(value or "Conversa livre")
                 return self
@@ -4905,6 +4922,9 @@ local AdapterFactory = (function()
             function handle:SetBusy(value)
                 if self._destroyed then return self end
                 self._busy = value == true
+                if self._documents then
+                    if self._busy then self._documents:Lock() else self._documents:Unlock() end
+                end
                 clear.Interactable = not self._busy
                 send.Text = self._busy and "…" or "Enviar"
                 refreshSend()
