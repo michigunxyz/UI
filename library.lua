@@ -4774,6 +4774,22 @@ local AdapterFactory = (function()
                 corner(result, 10)
                 return result
             end
+            local function tintAction(owner, control, surface, foreground)
+                control.BackgroundColor3, control.TextColor3 = surface, foreground
+                local hovered, focused = false, false
+                local function paint()
+                    local target = hovered or focused
+                    TweenService:Create(control, TweenInfo.new(0.12), {
+                        BackgroundColor3 = target and surface:Lerp(Color3.new(1, 1, 1), 0.08) or surface,
+                    }):Play()
+                end
+                bind(owner, control.MouseEnter, function() hovered = true paint() end)
+                bind(owner, control.MouseLeave, function() hovered = false paint() end)
+                bind(owner, control.SelectionGained, function() focused = true paint() end)
+                bind(owner, control.SelectionLost, function() focused = false paint() end)
+            end
+            local copySurface, copyText = Color3.fromRGB(44, 54, 77), Color3.fromRGB(207, 222, 255)
+            local chatSurface, chatText = Color3.fromRGB(35, 64, 53), Color3.fromRGB(191, 238, 214)
             local clear = button(frame, "Limpar", 76)
             clear.AnchorPoint, clear.Position = Vector2.new(1, 0), UDim2.new(1, -12, 0, 10)
             local documentRow = new("Frame", { Name = "ChatDocument", Position = UDim2.fromOffset(12, 62),
@@ -4924,6 +4940,7 @@ local AdapterFactory = (function()
                         BackgroundColor3 = Airflow.Theme.Surface2, BorderSizePixel = 0, LayoutOrder = 3, Parent = body })
                     corner(codeFrame, 10)
                     local copyCode = button(codeFrame, "Copiar código", 120)
+                    tintAction(entry, copyCode, copySurface, copyText)
                     copyCode.Position = UDim2.fromOffset(8, 4)
                     local codeScroll = new("ScrollingFrame", { Position = UDim2.fromOffset(12, 52),
                         Size = UDim2.new(1, -24, 1, -64), BackgroundTransparency = 1, BorderSizePixel = 0,
@@ -4940,8 +4957,10 @@ local AdapterFactory = (function()
                     local actions = new("Frame", { Size = UDim2.new(1, 0, 0, 44), BackgroundTransparency = 1,
                         LayoutOrder = 4, Parent = body })
                     local copy = button(actions, "Copiar", 0)
+                    tintAction(entry, copy, copySurface, copyText)
                     copy.Size = UDim2.new(0.5, -4, 0, 44)
                     local gameChat = button(actions, "Enviar no chat", 0)
+                    tintAction(entry, gameChat, chatSurface, chatText)
                     gameChat.Position, gameChat.Size = UDim2.new(0.5, 4, 0, 0), UDim2.new(0.5, -4, 0, 44)
                     bind(entry, copy.Activated, function() call(message.Copy, rawText) end)
                     bind(entry, gameChat.Activated, function() call(message.SendToChat, rawText) end)
