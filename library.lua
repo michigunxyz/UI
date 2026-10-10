@@ -6,6 +6,15 @@ local function uppercasePortuguese(value)
     end
     return result
 end
+local function controlSize(frame, height)
+    height=math.max(0,height)
+    if frame:GetAttribute("UIIntrinsicHeight")~=height then frame:SetAttribute("UIIntrinsicHeight",height) end
+    local parent=frame.Parent
+    if parent and parent:GetAttribute("UILayoutRow") then
+        height=math.max(height,parent:GetAttribute("UIRowHeight") or 0)
+    end
+    return UDim2.new(frame.Size.X.Scale,frame.Size.X.Offset,0,height)
+end
 local Palette = {
     Accent = "#E6E6EB",
     AccentSoft = "#DCDCE2",
@@ -296,6 +305,13 @@ local Airflow = (function()
     local chipHeight=isTouchDevice and 34 or 28
     local tweenCache={}
     local function animate(object2,properties2,duration2,style2,direction2)
+        local parent=object2.Parent
+        if properties2.Size and parent and parent:GetAttribute("UILayoutRow") then
+            object2.Size=properties2.Size
+            properties2=table.clone(properties2)
+            properties2.Size=nil
+            if not next(properties2) then return nil end
+        end
         duration2=duration2 or.2
         if duration2<=0 then
             for index6,entry6 in pairs(properties2)do
@@ -607,10 +623,11 @@ local Airflow = (function()
         frame.ClipsDescendants = true
         frame:SetAttribute("UIRole", section and "SectionHeader" or "ActionButton")
         local hovered = false
-        local leading
+        local leading,leadingHolder
         if config.Icon then
             local holder
             holder, leading = createIcon(frame, config.Icon, nativeTheme2.Text, UDim2.new(0, section and 0 or 14, .5, 0))
+            leadingHolder=holder
         end
         local title, description = createCardLabels(frame, config.Name or "Button", config.Desc, section and 36 or 56)
         if section then
@@ -645,7 +662,7 @@ local Airflow = (function()
             local holder
             holder, arrow = createIcon(indicator, "arrow-up-right", nativeTheme2.AccentDark, UDim2.new(.5, -8, .5, 0))
         end
-        local control = {}
+        local control = { LeadingIcon=leadingHolder,ActionIndicator=indicator }
         function control:RefreshStyle(animated)
             local monochrome = NativeLibrary.ThemeName == "Mono"
             local accentedPrimary = primary and not monochrome
@@ -1096,7 +1113,7 @@ local Airflow = (function()
                 textBox2.Text=""
                 callback20()
             end
-            animate(value59,{Size=UDim2.new(1,0,0,configuration42 and callback21()or value61)},.3,Enum.EasingStyle.Quint)
+            animate(value59,{Size=controlSize(value59,configuration42 and callback21()or value61)},.3,Enum.EasingStyle.Quint)
             animate(value68,{BackgroundTransparency=configuration42 and 0 or 1},.2)
             animate(stroke5,{Transparency=configuration42 and 0 or 1},.2)
             animate(textBox2,{TextTransparency=configuration42 and 0 or 1},.2)
@@ -1211,7 +1228,7 @@ local Airflow = (function()
             end
             callback20()
             if entries9.Open then
-                value59.Size=UDim2.new(1,0,0,callback21())
+                value59.Size=controlSize(value59,callback21())
             end
         end
         function entries9:Set(configuration44,argument33)
@@ -1253,7 +1270,7 @@ local Airflow = (function()
             text6=string.lower(textBox2.Text)
             callback20()
             if entries9.Open then
-                animate(value59,{Size=UDim2.new(1,0,0,callback21())},.2,Enum.EasingStyle.Quint)
+                animate(value59,{Size=controlSize(value59,callback21())},.2,Enum.EasingStyle.Quint)
             end
         end)
         callback24()
@@ -1268,12 +1285,12 @@ local Airflow = (function()
             value61=height
             textButton3.Size=UDim2.new(1,0,0,height)
             value66.Position=UDim2.new(0,10,0,height)
-            value59.Size=UDim2.new(1,0,0,entries9.Open and callback21() or height)
+            value59.Size=controlSize(value59,entries9.Open and callback21() or height)
         end
         entries9.UIOptionRows=entries11
         entries9.UIReflow=function()
             if entries9.Open then
-                value59.Size=UDim2.new(1,0,0,callback21())
+                value59.Size=controlSize(value59,callback21())
             end
         end
         return registerElement(self,configuration39,entries9,value59,"Dropdown")
@@ -1489,7 +1506,7 @@ local Airflow = (function()
         end
         local function callback31(configuration60)
             entries16.Open=configuration60
-            animate(value96,{Size=UDim2.new(1,0,0,configuration60 and value98+168 or value98)},.35,Enum.EasingStyle.Quint)
+            animate(value96,{Size=controlSize(value96,configuration60 and value98+168 or value98)},.35,Enum.EasingStyle.Quint)
             value101:Set(configuration60)
             if configuration60 then
                 value102.Visible=true
@@ -1569,7 +1586,7 @@ local Airflow = (function()
             value98=height
             value99.Size=UDim2.new(1,0,0,height)
             value102.Position=UDim2.fromOffset(14,height+2)
-            value96.Size=UDim2.new(1,0,0,entries16.Open and height+168 or height)
+            value96.Size=controlSize(value96,entries16.Open and height+168 or height)
         end
         return registerElement(self,configuration55,entries16,value96,"ColorPicker")
     end
@@ -4498,7 +4515,7 @@ local AdapterFactory = (function()
             local function snapshot(object)
                 return object and { Position=object.Position,Size=object.Size,AnchorPoint=object.AnchorPoint,TextSize=object:IsA("TextLabel") and object.TextSize or nil }
             end
-            local original={Height=frame.Size.Y.Offset,Title=snapshot(title),Description=snapshot(description),Holder=snapshot(holder),Track=snapshot(native.Track),Hit=snapshot(native.HitArea)}
+            local original={Height=frame.Size.Y.Offset,Title=snapshot(title),Description=snapshot(description),Holder=snapshot(holder),Track=snapshot(native.Track),Hit=snapshot(native.HitArea),Leading=snapshot(native.LeadingIcon),Indicator=snapshot(native.ActionIndicator)}
             local wasCompact=false
             local scheduled=false
             local function restore(object, state)
@@ -4527,11 +4544,12 @@ local AdapterFactory = (function()
                         if wasCompact then
                             restore(title,original.Title); restore(description,original.Description); restore(holder,original.Holder)
                             restore(native.Track,original.Track); restore(native.HitArea,original.Hit)
+                            restore(native.LeadingIcon,original.Leading); restore(native.ActionIndicator,original.Indicator)
                             if native.UIResizeValue then native.UIResizeValue(true) end
                         end
                         wasCompact=false
                         if not wrapped then
-                            if native.UISetHeaderHeight then native.UISetHeaderHeight(original.Height) else frame.Size=UDim2.new(1,0,0,original.Height) end
+                            if native.UISetHeaderHeight then native.UISetHeaderHeight(original.Height) else frame.Size=controlSize(frame,original.Height) end
                             return
                         end
                     else
@@ -4539,21 +4557,32 @@ local AdapterFactory = (function()
                         title.TextSize=14
                         if description then description.TextSize=12 end
                     end
-                    local inset=original.Title.Position.X.Offset
+                    local row=frame.Parent
+                    local narrowAction=kind=="Button" and frame:GetAttribute("UIRole")=="ActionButton"
+                        and row and row:GetAttribute("UIRowColumns")==true and width<200
+                    local inset=narrowAction and 12 or original.Title.Position.X.Offset
                     local reserved=12
-                    if compact and kind=="Button" then reserved=frame:GetAttribute("UIRole")=="SectionHeader" and 36 or 46 end
+                    if native.LeadingIcon then
+                        if narrowAction then native.LeadingIcon.Position=UDim2.fromOffset(12,18)
+                        else restore(native.LeadingIcon,original.Leading) end
+                    end
+                    if native.ActionIndicator then
+                        if narrowAction then native.ActionIndicator.Position=UDim2.new(1,-12,0,18)
+                        else native.ActionIndicator.Position=original.Indicator.Position end
+                    end
+                    if compact and kind=="Button" and not narrowAction then reserved=frame:GetAttribute("UIRole")=="SectionHeader" and 36 or 46 end
                     if compact and kind=="Toggle" then reserved=handle._checkbox and 42 or 68 end
                     if compact and kind=="Slider" then reserved=(holder and holder.Size.X.Offset or 56)+26 end
                     if holder and not stacked and kind~="Slider" then reserved=holder.Size.X.Offset+math.abs(holder.Position.X.Offset)+10 end
-                    if not compact and not holder then reserved=math.max(12,-original.Title.Size.X.Offset-inset) end
+                    if not compact and not holder and not narrowAction then reserved=math.max(12,-original.Title.Size.X.Offset-inset) end
                     local labelWidth=math.max(24,width-inset-reserved)
                     local titleHeight=math.max(18,math.ceil(title.TextBounds.Y/scale)+2)
                     title.AnchorPoint=original.Title.AnchorPoint
-                    title.Position,title.Size=UDim2.fromOffset(inset,compact and 6 or original.Title.Position.Y.Offset),UDim2.new(0,labelWidth,0,titleHeight)
+                    title.Position,title.Size=UDim2.fromOffset(inset,narrowAction and 36 or (compact and 6 or original.Title.Position.Y.Offset)),UDim2.new(0,labelWidth,0,titleHeight)
                     local bottom=title.Position.Y.Offset+titleHeight
                     if description then
                         local descHeight=math.max(14,math.ceil(description.TextBounds.Y/scale)+2)
-                        description.Position=UDim2.fromOffset(original.Description.Position.X.Offset,bottom+2)
+                        description.Position=UDim2.fromOffset(narrowAction and inset or original.Description.Position.X.Offset,bottom+2)
                         description.Size=UDim2.new(0,labelWidth,0,descHeight)
                         bottom+=2+descHeight
                     end
@@ -4569,7 +4598,7 @@ local AdapterFactory = (function()
                         native.Track.Position=UDim2.new(0,14,0,height-18)
                         native.HitArea.Position=UDim2.new(0,8,0,height-38)
                         native.HitArea.Size=UDim2.new(1,-16,0,38)
-                    elseif not compact then
+                    elseif not compact and not narrowAction then
                         local titleAvailable=original.Title.Size.Y.Scale*original.Height+original.Title.Size.Y.Offset
                         height=original.Height+math.max(0,titleHeight-titleAvailable)
                             +(description and math.max(0,description.Size.Y.Offset-original.Description.Size.Y.Offset) or 0)
@@ -4578,7 +4607,7 @@ local AdapterFactory = (function()
                             title.Position=UDim2.new(original.Title.Position.X.Scale,original.Title.Position.X.Offset,.5,0)
                         end
                     end
-                    if native.UISetHeaderHeight then native.UISetHeaderHeight(height) else frame.Size=UDim2.new(1,0,0,height) end
+                    if native.UISetHeaderHeight then native.UISetHeaderHeight(height) else frame.Size=controlSize(frame,height) end
                     local indicator=frame:FindFirstChild("ActionIndicator")
                     if indicator then indicator.Size=UDim2.fromOffset(compact and 26 or (Airflow.Touch and 32 or 28),compact and 26 or (Airflow.Touch and 32 or 28)) end
                 end)
@@ -4714,7 +4743,7 @@ local AdapterFactory = (function()
                 if box and config.Type == "Textarea" then
                     local holder = box.Parent
                     native._frame:SetAttribute("UIMultiline", true)
-                    native._frame.Size = UDim2.new(1, 0, 0, 170)
+                    native._frame.Size = controlSize(native._frame,170)
                     holder.AnchorPoint = Vector2.zero
                     holder.Position = UDim2.fromOffset(14, config.Desc and 65 or 42)
                     holder.Size = UDim2.new(1, -28, 1, config.Desc and -79 or -56)
@@ -4772,6 +4801,7 @@ local AdapterFactory = (function()
             FillDirection = horizontal and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical,
             SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8), Parent = frame,
         })
+            frame:SetAttribute("UILayoutRow",horizontal)
             local stack = context(parent, provider(parent, frame), frame)
             stack.__type = horizontal and "HStack" or "VStack"
             stack._connections = {}
@@ -4789,36 +4819,43 @@ local AdapterFactory = (function()
                             return
                         end
                         local children, height = {}, 0
-                        for _, child in ipairs(frame:GetChildren()) do
-                            if child:IsA("GuiObject") and child.Visible then
-                                children[#children + 1] = child
+                        for _,child in ipairs(frame:GetChildren()) do
+                            if child:IsA("GuiObject") and child.Visible and child:GetAttribute("UIRole")~="Spacer" then
+                                children[#children+1]=child
                             end
                         end
-                        local columns = not rowConfig or frame.AbsoluteSize.X / math.max(parent._provider.Window.Scale.Scale, 0.01)
-                        >= (#children * (rowConfig.MinColumnWidth or 210) + 8 * math.max(0, #children - 1))
-                        layout.FillDirection = columns and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical
-                        for _, child in ipairs(children) do
-                            local size = columns and UDim2.new(1 / #children, -8 * (#children - 1) / #children, 0, child.Size.Y.Offset)
-                            or UDim2.new(1, 0, 0, child.Size.Y.Offset)
-                            if child.Size ~= size then
-                                child.Size = size
-                            end
-                            local childHeight = math.max(child.Size.Y.Offset, child.AbsoluteSize.Y / math.max(parent._provider.Window.Scale.Scale, 0.01))
-                            height = columns and math.max(height, childHeight) or height + childHeight
+                        local count=#children
+                        local gap=8
+                        local scale=math.max(parent._provider.Window.Scale.Scale,.01)
+                        local columns=not rowConfig or frame.AbsoluteSize.X/scale >= count*(rowConfig.MinColumnWidth or 210)+gap*math.max(0,count-1)
+                        frame:SetAttribute("UIRowColumns",columns)
+                        layout.FillDirection=columns and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical
+                        layout.HorizontalAlignment=Enum.HorizontalAlignment.Left
+                        layout.VerticalAlignment=Enum.VerticalAlignment.Top
+                        local heights={}
+                        for index,child in ipairs(children) do
+                            local natural=child:GetAttribute("UIIntrinsicHeight")
+                            if natural==nil then natural=math.max(child.Size.Y.Offset,child.AbsoluteSize.Y/scale) end
+                            heights[index]=natural
+                            height=columns and math.max(height,natural) or height+natural
                         end
-                        if not columns then
-                            height += 8 * math.max(0, #children - 1)
+                        frame:SetAttribute("UIRowHeight",columns and height or nil)
+                        for index,child in ipairs(children) do
+                            local size=columns and UDim2.new(1/count,-gap*(count-1)/count,0,height)
+                                or UDim2.new(1,0,0,heights[index])
+                            if child.Size~=size then child.Size=size end
                         end
-                        local size = UDim2.new(1, 0, 0, height)
-                        if frame.Size ~= size then
-                            frame.Size = size
-                        end
+                        if not columns then height+=gap*math.max(0,count-1) end
+                        local size=UDim2.new(1,0,0,height)
+                        if frame.Size~=size then frame.Size=size end
                     end)
                 end
                 local function watchChild(child)
                     if not stack._destroyed and child:IsA("GuiObject") and not stack._childConnections[child] then
                         stack._childConnections[child] = {
                         connect(child:GetPropertyChangedSignal("Size"), arrange),
+                        connect(child:GetPropertyChangedSignal("AbsoluteSize"), arrange),
+                        connect(child:GetAttributeChangedSignal("UIIntrinsicHeight"), arrange),
                         connect(child:GetPropertyChangedSignal("Visible"), arrange),
                     }
                     end
@@ -4838,9 +4875,8 @@ local AdapterFactory = (function()
                 for _, child in ipairs(frame:GetChildren()) do
                     watchChild(child)
                 end
-                if rowConfig then
-                    stack._connections[#stack._connections + 1] = connect(frame:GetPropertyChangedSignal("AbsoluteSize"), arrange)
-                end
+                stack._connections[#stack._connections + 1] = connect(frame:GetPropertyChangedSignal("AbsoluteSize"), arrange)
+                stack._connections[#stack._connections + 1] = connect(parent._provider.Window.Scale:GetPropertyChangedSignal("Scale"), arrange)
                 arrange()
             end
             return stack
@@ -4884,7 +4920,8 @@ local AdapterFactory = (function()
             return group
         end
         function ContainerMethods:Space(size)
-            local frame = new("Frame", { Size = UDim2.new(1, 0, 0, tonumber(size) or 8), BackgroundTransparency = 1, LayoutOrder = self._provider:_nextOrder(), Parent = self._provider.List })
+            local frame = new("Frame", { Name="Spacer", Size = UDim2.new(1, 0, 0, tonumber(size) or 8), Visible=self.__type~="HStack", BackgroundTransparency = 1, LayoutOrder = self._provider:_nextOrder(), Parent = self._provider.List })
+            frame:SetAttribute("UIRole","Spacer")
             return wrapControl(self, "Space", {}, { _frame = frame })
         end
         function ContainerMethods:Divider()
