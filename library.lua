@@ -1305,25 +1305,36 @@ local Airflow = (function()
         if icon5 then
             createIcon(frame10,icon5,nativeTheme2.Muted,UDim2.new(0,8,.5,0))
         end
-        local textBox3=createInstance("TextBox",{Name="ValueInput",AnchorPoint=Vector2.new(.5,.5),Position=UDim2.new(.5,icon5 and 11 or 0,.5,0),Size=UDim2.new(1,icon5 and-38 or-16,1,0),TextYAlignment=Enum.TextYAlignment.Center,BackgroundTransparency=1,Text=configuration47.Default or"",PlaceholderText=configuration47.Placeholder or"",PlaceholderColor3=nativeTheme2.Muted,TextColor3=nativeTheme2.Text,TextSize=14,FontFace=nativeFonts.Regular,TextXAlignment=Enum.TextXAlignment.Center,ClearTextOnFocus=false,TextTruncate=Enum.TextTruncate.None,ClipsDescendants=true,Parent=frame10})
+        local textBox3=createInstance("TextBox",{Name="ValueInput",AnchorPoint=Vector2.new(0,.5),Position=UDim2.new(0,icon5 and 30 or 8,.5,0),Size=UDim2.new(1,icon5 and-38 or-16,1,-8),TextYAlignment=Enum.TextYAlignment.Center,BackgroundTransparency=1,Text=configuration47.Default or"",PlaceholderText=configuration47.Placeholder or"",PlaceholderColor3=nativeTheme2.Muted,TextColor3=nativeTheme2.Text,TextSize=14,TextScaled=false,TextWrapped=false,FontFace=nativeFonts.Regular,TextXAlignment=Enum.TextXAlignment.Center,ClearTextOnFocus=false,TextTruncate=Enum.TextTruncate.AtEnd,ClipsDescendants=true,Parent=frame10})
+        local valueMeasure=createLabel{Name="ValueMeasure",Size=UDim2.fromOffset(0,24),AutomaticSize=Enum.AutomaticSize.X,FontFace=nativeFonts.Regular,TextSize=14,TextTruncate=Enum.TextTruncate.None,Visible=false,Parent=frame10}
         frame10.ClipsDescendants=true
         local enabled8=false
-        local value85=(icon5 and 30 or 8)+8
+        local valuePadding=icon5 and 38 or 16
         local function callback25(configuration48)
-            if value80:GetAttribute("UIMultiline") or value80:GetAttribute("UIStacked") then
+            if value80:GetAttribute("UIMultiline") then
+                textBox3.TextScaled=false
+                textBox3.TextTruncate=Enum.TextTruncate.None
                 return
             end
-            local value86=value80.AbsoluteSize.X/self.Window.Scale.Scale
-            local value87=math.clamp(value86-14-110-20,100,200)
-            local text7=textBox3.Text
-            local x=textBox3.TextBounds.X
-            if#text7==0 then
-                x=math.min(textBox3.TextBounds.X,90)
+            local scale=math.max(self.Window.Scale.Scale,.01)
+            valueMeasure.Text=textBox3.Text~="" and textBox3.Text or textBox3.PlaceholderText
+            local textWidth=valueMeasure.TextBounds.X/scale
+            local desiredWidth=math.max(90,math.ceil(textWidth+valuePadding+4)+(enabled8 and 8 or 0))
+            if value80:GetAttribute("UIValueWidth")~=desiredWidth then value80:SetAttribute("UIValueWidth",desiredWidth) end
+            if not value80:GetAttribute("UIStacked") then
+                local cardWidth=value80.AbsoluteSize.X/scale
+                local width=math.min(desiredWidth,math.max(1,math.min(240,cardWidth-130)))
+                frame10.AnchorPoint=Vector2.new(1,.5)
+                frame10.Position=UDim2.new(1,-10,.5,0)
+                frame10.Size=UDim2.fromOffset(width,30)
+                if not value80:GetAttribute("UICompact") then blendColor(value83,value84,width+20) end
             end
-            local value88=math.clamp(x+value85+12,90,value87)+(enabled8 and 8 or 0)
-            value88=math.min(value88,value87+8)
-            blendColor(value83,value84,value88+20)
-            frame10.Size=UDim2.fromOffset(value88,30)
+            local availableWidth=math.max(1,frame10.AbsoluteSize.X/scale-valuePadding-2)
+            textBox3.TextScaled=false
+            textBox3.TextWrapped=false
+            textBox3.TextSize=enabled8 and 14 or math.clamp(math.floor(14*availableWidth/math.max(textWidth,1)),12,14)
+            textBox3.TextXAlignment=enabled8 and Enum.TextXAlignment.Left or Enum.TextXAlignment.Center
+            textBox3.TextTruncate=enabled8 and Enum.TextTruncate.None or Enum.TextTruncate.AtEnd
         end
         value80:GetPropertyChangedSignal"AbsoluteSize":Connect(function()
             callback25(true)
@@ -1331,9 +1342,12 @@ local Airflow = (function()
         textBox3:GetPropertyChangedSignal"Text":Connect(function()
             callback25(false)
         end)
-        textBox3:GetPropertyChangedSignal"TextBounds":Connect(function()
+        textBox3:GetPropertyChangedSignal"PlaceholderText":Connect(function()
             callback25(false)
         end)
+        valueMeasure:GetPropertyChangedSignal"TextBounds":Connect(callback25)
+        frame10:GetPropertyChangedSignal"AbsoluteSize":Connect(callback25)
+        local inputScaleConnection=self.Window.Scale:GetPropertyChangedSignal"Scale":Connect(callback25)
         task.defer(callback25,true)
         textBox3.Focused:Connect(function()
             enabled8=true
@@ -1364,6 +1378,7 @@ local Airflow = (function()
         control.ValueInput=textBox3
         control.ValueHolder=frame10
         control.UIResizeValue=callback25
+        table.insert(control._listeners,function() inputScaleConnection:Disconnect() end)
         return control
     end
     function NativeTab:Keybind(configuration51)
@@ -1991,6 +2006,15 @@ local Airflow = (function()
         value146.BodyStroke.Transparency=1
         value148.Visible=false
         value146:_fitToScreen(true)
+        table.insert(value146._connections,value148:GetPropertyChangedSignal("Size"):Connect(function()
+            local width=value148.Size.X.Offset
+            local compact=width<560 or screenGui.AbsoluteSize.Y<430
+            local sidebarWidth=compact and (width<420 and 112 or 140) or 170
+            if compact~=value146._compactLayout or sidebarWidth~=value146._sidebarWidth then
+                value146._compactLayout=compact
+                value146:_layoutResponsive()
+            end
+        end))
         table.insert(value146._connections,screenGui:GetPropertyChangedSignal(text16):Connect(function()
             value146:_fitToScreen()
             value146:_clampToScreen()
@@ -2289,6 +2313,7 @@ local Airflow = (function()
         local compact=self._compactLayout==true
         local width=self.Root.Size.X.Offset
         local sidebarWidth=compact and (width<420 and 112 or 140) or 170
+        self._sidebarWidth=sidebarWidth
         local sidebar=self.Body:FindFirstChild("Sidebar")
         if sidebar then
             sidebar.Size=UDim2.new(0,sidebarWidth,1,0)
@@ -2354,10 +2379,9 @@ local Airflow = (function()
         local viewport=self.Gui.AbsoluteSize
         if viewport.X<=0 or viewport.Y<=0 then return end
         local preferred=self._preferredSize or self.Root.Size
-        local responsive=self.Responsive and (isTouchDevice or viewport.X<760 or viewport.Y<430)
         local size=preferred
-        if responsive then
-            size=UDim2.fromOffset(math.min(preferred.X.Offset,math.max(120,viewport.X-24)),math.min(preferred.Y.Offset,math.max(120,viewport.Y-24)))
+        if self.Responsive then
+            size=UDim2.fromOffset(math.clamp(preferred.X.Offset,320,math.max(320,viewport.X-24)),math.clamp(preferred.Y.Offset,260,math.max(260,viewport.Y-24)))
         end
         if self.Root.Size~=size then self.Root.Size=size end
         self._compactLayout=size.X.Offset<560 or viewport.Y<430
@@ -2462,8 +2486,16 @@ local Airflow = (function()
             if not enabled14 then
                 return
             end
-            local value186=(getPointerPosition()-zero3)/self.Scale.Scale
-            value185=Vector2.new(math.clamp(size4.X.Offset+value186.X*2,configuration108.X,value184.X),math.clamp(size4.Y.Offset+value186.Y*2,configuration108.Y,value184.Y))
+            local value186=(getPointerPosition()-zero3)/math.max(self.Scale.Scale,.01)
+            local maxWidth,maxHeight=value184.X,value184.Y
+            if self.Responsive then
+                local viewport=self.Gui.AbsoluteSize
+                maxWidth=math.min(maxWidth,math.max(320,viewport.X-24))
+                maxHeight=math.min(maxHeight,math.max(260,viewport.Y-24))
+            end
+            local minWidth=math.min(maxWidth,self.Responsive and math.max(320,configuration108.X) or configuration108.X)
+            local minHeight=math.min(maxHeight,self.Responsive and math.max(260,configuration108.Y) or configuration108.Y)
+            value185=Vector2.new(math.clamp(size4.X.Offset+value186.X*2,minWidth,maxWidth),math.clamp(size4.Y.Offset+value186.Y*2,minHeight,maxHeight))
             local value187=Vector2.new(self.Root.Size.X.Offset,self.Root.Size.Y.Offset)
             local value188=1-math.exp(-configuration111*35)
             local value189=value187:Lerp(value185,value188)
@@ -4517,6 +4549,7 @@ local AdapterFactory = (function()
             end
             local original={Height=frame.Size.Y.Offset,Title=snapshot(title),Description=snapshot(description),Holder=snapshot(holder),Track=snapshot(native.Track),Hit=snapshot(native.HitArea),Leading=snapshot(native.LeadingIcon),Indicator=snapshot(native.ActionIndicator)}
             local wasCompact=false
+            local wasStacked=false
             local scheduled=false
             local function restore(object, state)
                 if not object or not state then return end
@@ -4533,22 +4566,34 @@ local AdapterFactory = (function()
                     local width=frame.AbsoluteSize.X/scale
                     if width<=0 then return end
                     local compact=window._compactLayout or width<360
-                    local wrapped=compact or config.DisplayTitle~=nil or config.DisplayDesc~=nil
+                    local stacked=holder and kind~="Slider" and kind~="Colorpicker" and compact and width<300
+                    if holder and kind=="Input" then
+                        local inlineWidth=math.min(240,width-130)
+                        stacked=width<300 or (frame:GetAttribute("UIValueWidth") or 90)>inlineWidth
+                    end
+                    local wrapped=compact or stacked or config.DisplayTitle~=nil or config.DisplayDesc~=nil
                     title.TextWrapped=wrapped==true
                     title.TextTruncate=wrapped and Enum.TextTruncate.None or Enum.TextTruncate.AtEnd
                     if description then description.TextWrapped=wrapped==true; description.TextTruncate=title.TextTruncate end
                     frame:SetAttribute("UICompact",compact)
-                    local stacked=compact and width<300 and holder and kind~="Slider" and kind~="Colorpicker"
                     frame:SetAttribute("UIStacked",stacked==true)
+                    if wasStacked and not stacked then
+                        restore(holder,original.Holder)
+                        if native.UIResizeValue then native.UIResizeValue(true) end
+                    end
+                    wasStacked=stacked==true
                     if not compact then
                         if wasCompact then
-                            restore(title,original.Title); restore(description,original.Description); restore(holder,original.Holder)
+                            restore(title,original.Title); restore(description,original.Description)
+                            if not stacked then restore(holder,original.Holder) end
                             restore(native.Track,original.Track); restore(native.HitArea,original.Hit)
                             restore(native.LeadingIcon,original.Leading); restore(native.ActionIndicator,original.Indicator)
-                            if native.UIResizeValue then native.UIResizeValue(true) end
+                            if native.UIResizeValue and not stacked then native.UIResizeValue(true) end
                         end
                         wasCompact=false
                         if not wrapped then
+                            restore(title,original.Title); restore(description,original.Description)
+                            if native.UIResizeValue then native.UIResizeValue(true) end
                             if native.UISetHeaderHeight then native.UISetHeaderHeight(original.Height) else frame.Size=controlSize(frame,original.Height) end
                             return
                         end
@@ -4592,6 +4637,7 @@ local AdapterFactory = (function()
                         holder.Position=UDim2.fromOffset(12,bottom+6)
                         holder.Size=UDim2.new(1,-24,0,36)
                         height=bottom+48
+                        if native.UIResizeValue then native.UIResizeValue(true) end
                     elseif compact and kind=="Slider" then
                         holder.Position=UDim2.new(1,-14,0,title.Position.Y.Offset+titleHeight/2)
                         height=math.max(70,bottom+44)
@@ -4618,6 +4664,7 @@ local AdapterFactory = (function()
             handle._connections[#handle._connections+1]=connect(frame:GetPropertyChangedSignal("AbsoluteSize"),arrange)
             handle._connections[#handle._connections+1]=connect(window.Scale:GetPropertyChangedSignal("Scale"),arrange)
             if holder then handle._connections[#handle._connections+1]=connect(holder:GetPropertyChangedSignal("AbsoluteSize"),arrange) end
+            if kind=="Input" then handle._connections[#handle._connections+1]=connect(frame:GetAttributeChangedSignal("UIValueWidth"),arrange) end
             arrange()
         end
         local function basic(context, kind, config)
@@ -4751,6 +4798,8 @@ local AdapterFactory = (function()
                     box.Size = UDim2.new(1, -16, 1, -12)
                     box.Position = UDim2.fromOffset(8, 6)
                     box.MultiLine = true
+                    box.TextScaled = false
+                    box.TextTruncate = Enum.TextTruncate.None
                     box.TextWrapped = true
                     box.TextYAlignment = Enum.TextYAlignment.Top
                     box.TextXAlignment = Enum.TextXAlignment.Left
@@ -4827,7 +4876,13 @@ local AdapterFactory = (function()
                         local count=#children
                         local gap=8
                         local scale=math.max(parent._provider.Window.Scale.Scale,.01)
-                        local columns=not rowConfig or frame.AbsoluteSize.X/scale >= count*(rowConfig.MinColumnWidth or 210)+gap*math.max(0,count-1)
+                        local minColumnWidth=rowConfig and (rowConfig.MinColumnWidth or 210) or 80
+                        if not rowConfig then
+                            for _,child in ipairs(children) do
+                                if child:GetAttribute("UIRole")~="ActionButton" then minColumnWidth=160; break end
+                            end
+                        end
+                        local columns=frame.AbsoluteSize.X/scale >= count*minColumnWidth+gap*math.max(0,count-1)
                         frame:SetAttribute("UIRowColumns",columns)
                         layout.FillDirection=columns and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical
                         layout.HorizontalAlignment=Enum.HorizontalAlignment.Left
