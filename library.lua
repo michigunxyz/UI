@@ -786,7 +786,7 @@ local Airflow = (function()
             textBox.Size=UDim2.new(1,-20-suffixWidth,1,0)
             textLabel5.AnchorPoint=Vector2.new(1,.5)
             textLabel5.Position=UDim2.new(1,-10,.5,0)
-            sliderTitle.Size=UDim2.new(1,-width-sliderTitle.Position.X.Offset-28,0,18)
+            if not cardFrame3:GetAttribute("UICompact") then sliderTitle.Size=UDim2.new(1,-width-sliderTitle.Position.X.Offset-28,0,18) end
         end
         textLabel4:GetPropertyChangedSignal"TextBounds":Connect(function()
             if not enabled5 then
@@ -935,6 +935,9 @@ local Airflow = (function()
         table.insert(entries8._listeners,function()
             valueScaleConnection:Disconnect()
         end)
+        entries8.ValueHolder=value47
+        entries8.Track=value48
+        entries8.HitArea=textButton2
         entries8.TitleLabel=sliderTitle
         entries8.ValueLabel=textLabel4
         entries8.ValueInput=textBox
@@ -977,6 +980,7 @@ local Airflow = (function()
             return".."
         end
         local function callback15(configuration40)
+            if value59:GetAttribute("UIStacked") then return end
             local value65=math.clamp(textLabel6.TextBounds.X+10+34,60,190)
             blendColor(titleLabel,descriptionLabel,value65+20)
             if configuration40 then
@@ -1255,6 +1259,17 @@ local Airflow = (function()
         callback24()
         callback18()
         task.defer(callback15,true)
+        entries9.TitleLabel=titleLabel
+        entries9.DescriptionLabel=descriptionLabel
+        entries9.ValueHolder=value62
+        entries9.UIResizeValue=callback15
+        entries9.UISetHeaderHeight=function(height)
+            if value61==height then return end
+            value61=height
+            textButton3.Size=UDim2.new(1,0,0,height)
+            value66.Position=UDim2.new(0,10,0,height)
+            value59.Size=UDim2.new(1,0,0,entries9.Open and callback21() or height)
+        end
         entries9.UIOptionRows=entries11
         entries9.UIReflow=function()
             if entries9.Open then
@@ -1278,7 +1293,7 @@ local Airflow = (function()
         local enabled8=false
         local value85=(icon5 and 30 or 8)+8
         local function callback25(configuration48)
-            if value80:GetAttribute("UIMultiline") then
+            if value80:GetAttribute("UIMultiline") or value80:GetAttribute("UIStacked") then
                 return
             end
             local value86=value80.AbsoluteSize.X/self.Window.Scale.Scale
@@ -1330,6 +1345,8 @@ local Airflow = (function()
         control.TitleLabel=value83
         control.DescriptionLabel=value84
         control.ValueInput=textBox3
+        control.ValueHolder=frame10
+        control.UIResizeValue=callback25
         return control
     end
     function NativeTab:Keybind(configuration51)
@@ -1344,6 +1361,7 @@ local Airflow = (function()
         local textLabel9=createLabel{Size=UDim2.new(1,0,1,0),TextSize=13,TextColor3=nativeTheme2.Muted,TextXAlignment=Enum.TextXAlignment.Center,TextTruncate=Enum.TextTruncate.None,Parent=textButton5}
         local entries15={Value=configuration51.Default,Listening=false}
         local function callback26(configuration52)
+            if value90:GetAttribute("UIStacked") then return end
             local value95=math.max(textLabel9.TextBounds.X+20,isTouchDevice and 44 or 36)
             blendColor(value93,value94,value95+20)
             if configuration52 then
@@ -1400,6 +1418,10 @@ local Airflow = (function()
         function entries15:Get()
             return entries15.Value
         end
+        entries15.TitleLabel=value93
+        entries15.DescriptionLabel=value94
+        entries15.ValueHolder=textButton5
+        entries15.UIResizeValue=callback26
         return registerElement(self,configuration51,entries15,value90,"Keybind")
     end
     function NativeTab:ColorPicker(configuration55)
@@ -1408,7 +1430,7 @@ local Airflow = (function()
         configuration55,value96,value97,value98=offsetColor(self,configuration55,{Title="Name",Description="Desc",Color=text8,CurrentValue=text8,Value=text8},text9)
         value96.ClipsDescendants=true
         local value99=createInstance(text10,{Size=UDim2.new(1,0,0,value98),BackgroundTransparency=1,Text="",AutoButtonColor=false,Parent=value96})
-        createCardLabels(value99,configuration55.Name or"Color",configuration55.Desc,90)
+        local colorTitle,colorDescription=createCardLabels(value99,configuration55.Name or"Color",configuration55.Desc,90)
         local value100=createInstance(text9,{AnchorPoint=Vector2.new(1,.5),Position=UDim2.new(1,-34,.5,0),Size=UDim2.fromOffset(36,20),BorderSizePixel=0,Parent=value99})
         addCorner(value100,UDim.new(0,6))
         addStroke(value100,nativeTheme2.Stroke)
@@ -1539,6 +1561,16 @@ local Airflow = (function()
             end
         end)
         callback29(0)
+        entries16.TitleLabel=colorTitle
+        entries16.DescriptionLabel=colorDescription
+        entries16.ValueHolder=value100
+        entries16.UISetHeaderHeight=function(height)
+            if value98==height then return end
+            value98=height
+            value99.Size=UDim2.new(1,0,0,height)
+            value102.Position=UDim2.fromOffset(14,height+2)
+            value96.Size=UDim2.new(1,0,0,entries16.Open and height+168 or height)
+        end
         return registerElement(self,configuration55,entries16,value96,"ColorPicker")
     end
     function NativeTab:Stepper(configuration68)
@@ -1812,6 +1844,8 @@ local Airflow = (function()
         value146.Gui=screenGui
         local value148=createInstance(text13,{Name="Window",AnchorPoint=Vector2.new(.5,.5),Position=UDim2.fromScale(.5,.5),Size=value144,BackgroundTransparency=1,Parent=screenGui})
         value146.Root=value148
+        value146._preferredSize=value144
+        value146.Responsive=argument45.Responsive~=false
         local value149=createInstance("UIScale",{Parent=value148})
         value146.Scale=value149
         local imageLabel7=createInstance("ImageLabel",{Position=UDim2.fromOffset(-25,-25),Size=UDim2.new(1,50,1,50),BackgroundTransparency=1,Image=nativeAssets.Shadow,ImageColor3=Color3.new(0,0,0),ImageTransparency=.6,ScaleType=Enum.ScaleType.Slice,SliceCenter=Rect.new(49,49,450,450),Parent=value148})
@@ -1825,7 +1859,7 @@ local Airflow = (function()
         addGlow(value150,UDim2.fromOffset(130,60),UDim2.new(0,-10,1,-10),.75,90)
         addGlow(value150,UDim2.fromOffset(520,240),UDim2.new(1,-14,0,10),.92,90)
         local value151=createInstance(text13,{Name="Sidebar",Size=UDim2.new(0,170,1,0),BackgroundTransparency=1,Parent=value150})
-        createInstance(text13,{Position=UDim2.new(0,170,0,28),Size=UDim2.new(0,1,1,-56),BackgroundColor3=nativeTheme2.Stroke,BorderSizePixel=0,Parent=value150})
+        createInstance(text13,{Name="SidebarDivider",Position=UDim2.new(0,170,0,28),Size=UDim2.new(0,1,1,-56),BackgroundColor3=nativeTheme2.Stroke,BorderSizePixel=0,Parent=value150})
         local value152=createInstance(text13,{Name="Header",Size=UDim2.new(1,0,0,72),BackgroundTransparency=1,Parent=value151})
         local imageLabel8=createInstance("ImageLabel",{Position=UDim2.fromOffset(22,27),Size=UDim2.fromOffset(30,28),BackgroundTransparency=1,Image="",ImageColor3=nativeTheme2.Accent,ScaleType=Enum.ScaleType.Fit,Parent=value152})
         applyIcon(imageLabel8,argument45.Icon or nativeAssets.Logo)
@@ -1902,7 +1936,7 @@ local Airflow = (function()
         end))
         value146:_enableDrag()
         value146.MaxSize=argument45.MaxSize
-        value146.KeepOnScreen=argument45.KeepOnScreen~=false
+        value146.KeepOnScreen=argument45.KeepOnScreen==true
         value146:_enableResize(argument45.MinSize or Vector2.new(480,360))
         local configurationSaving=argument45.ConfigurationSaving
         if type(configurationSaving)==text17 and configurationSaving.Enabled~=false then
@@ -2234,20 +2268,86 @@ local Airflow = (function()
             end)
         end)
     end
-    function NativeWindow:_fitToScreen(configuration103)
-        local absoluteSize2=self.Gui.AbsoluteSize
-        if absoluteSize2.X==0 or absoluteSize2.Y==0 then
-            return
-        end
-        local size3=self.Root.Size
-        local value179=math.min(1,(absoluteSize2.X-24)/math.max(size3.X.Offset,1),(absoluteSize2.Y-24)/math.max(size3.Y.Offset,1))
-        self._fitScale=math.max(value179,.45)
-        if self._introDone and self.Open then
-            if configuration103 then
-                self.Scale.Scale=self._fitScale
-            else
-                animate(self.Scale,{Scale=self._fitScale},.2)
+    function NativeWindow:_layoutResponsive()
+        local compact=self._compactLayout==true
+        local width=self.Root.Size.X.Offset
+        local sidebarWidth=compact and (width<420 and 112 or 140) or 170
+        local sidebar=self.Body:FindFirstChild("Sidebar")
+        if sidebar then
+            sidebar.Size=UDim2.new(0,sidebarWidth,1,0)
+            local header=sidebar:FindFirstChild("Header")
+            local left=header and header:FindFirstChild("Left")
+            local titleGroup=left and left:FindFirstChild("Title")
+            if titleGroup then
+                titleGroup.Position=UDim2.fromOffset(compact and 38 or 60,compact and 18 or 25)
+                titleGroup.Size=UDim2.new(1,compact and -44 or -64,0,compact and 48 or 40)
+                for _,label in ipairs(titleGroup:GetChildren()) do
+                    if label:IsA("TextLabel") then
+                        local title=label.Name=="Title"
+                        label.TextWrapped=compact
+                        label.TextTruncate=compact and Enum.TextTruncate.None or Enum.TextTruncate.AtEnd
+                        label.TextSize=compact and (title and 12 or 11) or (title and 14 or 13)
+                        label.Position=UDim2.fromOffset(0,title and 0 or (compact and 30 or 20))
+                        label.Size=UDim2.new(1,0,0,title and (compact and 28 or 20) or 14)
+                    end
+                end
             end
+            if left then
+                for _,image in ipairs(left:GetChildren()) do
+                    if image:IsA("ImageLabel") then
+                        image.Position=UDim2.fromOffset(compact and 8 or 22,compact and 23 or 27)
+                        image.Size=UDim2.fromOffset(compact and 24 or 30,compact and 24 or 28)
+                    end
+                end
+            end
+            local footer=sidebar:FindFirstChild("KeybindFooter")
+            if footer then
+                footer.Position=UDim2.new(0,compact and 10 or 22,1,-36)
+                footer.Size=UDim2.new(1,compact and -20 or -44,0,22)
+                for _,label in ipairs(footer:GetChildren()) do
+                    if label:IsA("TextLabel") then label.Text=compact and "Menu" or "Abrir / minimizar" end
+                end
+            end
+        end
+        local divider=self.Body:FindFirstChild("SidebarDivider")
+        if divider then divider.Position=UDim2.new(0,sidebarWidth,0,28) end
+        self.Content.Position=UDim2.fromOffset(sidebarWidth+1,0)
+        self.Content.Size=UDim2.new(1,-sidebarWidth-1,1,0)
+        local tabPadding=self.TabList and self.TabList:FindFirstChildOfClass("UIPadding")
+        if tabPadding then tabPadding.PaddingLeft=UDim.new(0,compact and 8 or 16); tabPadding.PaddingRight=tabPadding.PaddingLeft end
+        for _,tab in ipairs(self.Tabs) do
+            if tab._label then
+                tab._label.TextSize=compact and 12 or 14
+                tab._label.TextWrapped=compact
+                tab._label.TextTruncate=compact and Enum.TextTruncate.None or Enum.TextTruncate.AtEnd
+            end
+            if tab._button then tab._button.Size=UDim2.new(1,0,0,compact and 44 or (isTouchDevice and 40 or 36)) end
+            if tab._heading then tab._heading.TextSize=compact and 18 or 22 end
+            local padding=tab.List and tab.List:FindFirstChildOfClass("UIPadding")
+            if padding then
+                padding.PaddingLeft=UDim.new(0,compact and 12 or 24)
+                padding.PaddingRight=padding.PaddingLeft
+                padding.PaddingBottom=UDim.new(0,compact and 12 or 24)
+            end
+            local layout=tab.List and tab.List:FindFirstChildOfClass("UIListLayout")
+            if layout then layout.Padding=UDim.new(0,compact and 6 or 8) end
+        end
+    end
+    function NativeWindow:_fitToScreen(configuration103)
+        local viewport=self.Gui.AbsoluteSize
+        if viewport.X<=0 or viewport.Y<=0 then return end
+        local preferred=self._preferredSize or self.Root.Size
+        local responsive=self.Responsive and (isTouchDevice or viewport.X<760 or viewport.Y<430)
+        local size=preferred
+        if responsive then
+            size=UDim2.fromOffset(math.min(preferred.X.Offset,math.max(120,viewport.X-24)),math.min(preferred.Y.Offset,math.max(120,viewport.Y-24)))
+        end
+        if self.Root.Size~=size then self.Root.Size=size end
+        self._compactLayout=size.X.Offset<560 or viewport.Y<430
+        self:_layoutResponsive()
+        self._fitScale=math.max(.45,math.min(1,(viewport.X-24)/math.max(size.X.Offset,1),(viewport.Y-24)/math.max(size.Y.Offset,1)))
+        if self._introDone and self.Open then
+            if configuration103 then self.Scale.Scale=self._fitScale else animate(self.Scale,{Scale=self._fitScale},.2) end
         end
     end
     function NativeWindow:_clampToScreen()
@@ -2334,6 +2434,7 @@ local Airflow = (function()
                 animate(imageLabel12,{ImageTransparency=.8},.17)
                 if value185 then
                     self.Root.Size=UDim2.fromOffset(value185.X,value185.Y)
+                    self._preferredSize=self.Root.Size
                     value185=nil
                 end
                 self:_fitToScreen()
@@ -2770,7 +2871,7 @@ local Airflow = (function()
         }
         for index, definition in ipairs(definitions) do
             local button = card(definition.Id, actions, index, true)
-            createIcon(button, definition.Icon, nativeTheme2.Muted, UDim2.fromOffset(14, 14))
+            local actionIcon=createIcon(button, definition.Icon, nativeTheme2.Muted, UDim2.fromOffset(14, 14))
             local title = label(button, definition.Title, 13, false)
             title.Position = UDim2.fromOffset(14, 36)
             title.Size = UDim2.new(1, -28, 0, 20)
@@ -2783,7 +2884,7 @@ local Airflow = (function()
             end)
             button.MouseEnter:Connect(function() animate(button, { BackgroundColor3 = nativeTheme2.Surface3 }, 0.12) end)
             button.MouseLeave:Connect(function() animate(button, { BackgroundColor3 = nativeTheme2.Surface2 }, 0.12) end)
-            tab._dashboardControls[definition.Id] = { Button = button, Title = title, Description = description }
+            tab._dashboardControls[definition.Id] = { Button = button, Title = title, Description = description, Icon = actionIcon }
         end
         local details = createInstance("Frame", { Name = "SessionDetails", Size = UDim2.new(1, 0, 0, 50),
             BackgroundTransparency = 1, LayoutOrder = 5, Parent = list })
@@ -2873,12 +2974,20 @@ local Airflow = (function()
                 pingRow.Size = UDim2.new(1, -20, 0, 22)
             end
             top.Size = UDim2.new(1, 0, 0, topHeight)
-            actions.Size = UDim2.new(1, 0, 0, compact and 266 or 82)
+            actions.Size = UDim2.new(1, 0, 0, compact and 196 or 82)
             for index, definition in ipairs(definitions) do
                 local control = tab._dashboardControls[definition.Id]
-                control.Button.Position = compact and UDim2.fromOffset(0, (index - 1) * 92)
+                control.Button.Position = compact and UDim2.fromOffset(0, (index - 1) * 68)
                     or UDim2.new((index - 1) / 3, (index - 1) * 8 / 3, 0, 0)
-                control.Button.Size = compact and UDim2.new(1, 0, 0, 82) or UDim2.new(1 / 3, -16 / 3, 0, 82)
+                control.Button.Size = compact and UDim2.new(1, 0, 0, 60) or UDim2.new(1 / 3, -16 / 3, 0, 82)
+                control.Icon.Position = compact and UDim2.new(0,14,.5,0) or UDim2.fromOffset(14,14)
+                control.Title.Position = UDim2.fromOffset(compact and 44 or 14,compact and 3 or 36)
+                control.Title.Size = UDim2.new(1,compact and -56 or -28,0,compact and 26 or 20)
+                control.Description.Position = UDim2.fromOffset(compact and 44 or 14,compact and 32 or 58)
+                control.Description.Size = UDim2.new(1,compact and -56 or -28,0,compact and 24 or 18)
+                control.Title.TextWrapped,control.Description.TextWrapped = compact,compact
+                control.Title.TextTruncate = compact and Enum.TextTruncate.None or Enum.TextTruncate.AtEnd
+                control.Description.TextTruncate = control.Title.TextTruncate
             end
         end
         local communityPending, nextCommunityRefresh = false, 0
@@ -3345,6 +3454,7 @@ local Airflow = (function()
             textButton10.Visible=false
         end
         table.insert(self.Tabs,value218)
+        self:_layoutResponsive()
         if#self.Tabs==1 then
             task.defer(function()
                 self:SelectTab(value218)
@@ -4077,7 +4187,7 @@ local AdapterFactory = (function()
             local frame = native._frame
             local labels = textLabels(frame)
             handle.Instance, handle.Frame, handle.Holder = frame, frame, frame
-            handle.UIElements = { Main = frame, Title = native.TitleLabel or labels[1], Desc = config.Desc and labels[2] or nil, Container = frame }
+            handle.UIElements = { Main = frame, Title = native.TitleLabel or labels[1], Desc = native.DescriptionLabel or (config.Desc and labels[2] or nil), Container = frame }
             if kind == "Slider" or kind == "Input" then
                 handle.UIElements.Desc = native.DescriptionLabel
                 handle.UIElements.Value = native.ValueLabel or native.ValueInput
@@ -4378,6 +4488,109 @@ local AdapterFactory = (function()
             end,
         })
         end
+        local function adaptControl(handle, kind, config)
+            if kind=="Paragraph" or kind=="Label" or config.Type=="Textarea" then return end
+            local frame, native=handle.Frame,handle._native
+            local title,description=handle.UIElements.Title,handle.UIElements.Desc
+            if not title then return end
+            local window=handle._context._window._native
+            local holder=native.ValueHolder
+            local function snapshot(object)
+                return object and { Position=object.Position,Size=object.Size,AnchorPoint=object.AnchorPoint,TextSize=object:IsA("TextLabel") and object.TextSize or nil }
+            end
+            local original={Height=frame.Size.Y.Offset,Title=snapshot(title),Description=snapshot(description),Holder=snapshot(holder),Track=snapshot(native.Track),Hit=snapshot(native.HitArea)}
+            local wasCompact=false
+            local scheduled=false
+            local function restore(object, state)
+                if not object or not state then return end
+                object.Position,object.Size,object.AnchorPoint=state.Position,state.Size,state.AnchorPoint
+                if state.TextSize then object.TextSize=state.TextSize end
+            end
+            local function arrange()
+                if scheduled or handle._destroyed then return end
+                scheduled=true
+                task.defer(function()
+                    scheduled=false
+                    if handle._destroyed or not frame.Parent then return end
+                    local scale=math.max(window.Scale.Scale,.01)
+                    local width=frame.AbsoluteSize.X/scale
+                    if width<=0 then return end
+                    local compact=window._compactLayout or width<360
+                    local wrapped=compact or config.DisplayTitle~=nil or config.DisplayDesc~=nil
+                    title.TextWrapped=wrapped==true
+                    title.TextTruncate=wrapped and Enum.TextTruncate.None or Enum.TextTruncate.AtEnd
+                    if description then description.TextWrapped=wrapped==true; description.TextTruncate=title.TextTruncate end
+                    frame:SetAttribute("UICompact",compact)
+                    local stacked=compact and width<300 and holder and kind~="Slider" and kind~="Colorpicker"
+                    frame:SetAttribute("UIStacked",stacked==true)
+                    if not compact then
+                        if wasCompact then
+                            restore(title,original.Title); restore(description,original.Description); restore(holder,original.Holder)
+                            restore(native.Track,original.Track); restore(native.HitArea,original.Hit)
+                            if native.UIResizeValue then native.UIResizeValue(true) end
+                        end
+                        wasCompact=false
+                        if not wrapped then
+                            if native.UISetHeaderHeight then native.UISetHeaderHeight(original.Height) else frame.Size=UDim2.new(1,0,0,original.Height) end
+                            return
+                        end
+                    else
+                        wasCompact=true
+                        title.TextSize=14
+                        if description then description.TextSize=12 end
+                    end
+                    local inset=original.Title.Position.X.Offset
+                    local reserved=12
+                    if compact and kind=="Button" then reserved=frame:GetAttribute("UIRole")=="SectionHeader" and 36 or 46 end
+                    if compact and kind=="Toggle" then reserved=handle._checkbox and 42 or 68 end
+                    if compact and kind=="Slider" then reserved=(holder and holder.Size.X.Offset or 56)+26 end
+                    if holder and not stacked and kind~="Slider" then reserved=holder.Size.X.Offset+math.abs(holder.Position.X.Offset)+10 end
+                    if not compact and not holder then reserved=math.max(12,-original.Title.Size.X.Offset-inset) end
+                    local labelWidth=math.max(24,width-inset-reserved)
+                    local titleHeight=math.max(18,math.ceil(title.TextBounds.Y/scale)+2)
+                    title.AnchorPoint=original.Title.AnchorPoint
+                    title.Position,title.Size=UDim2.fromOffset(inset,compact and 6 or original.Title.Position.Y.Offset),UDim2.new(0,labelWidth,0,titleHeight)
+                    local bottom=title.Position.Y.Offset+titleHeight
+                    if description then
+                        local descHeight=math.max(14,math.ceil(description.TextBounds.Y/scale)+2)
+                        description.Position=UDim2.fromOffset(original.Description.Position.X.Offset,bottom+2)
+                        description.Size=UDim2.new(0,labelWidth,0,descHeight)
+                        bottom+=2+descHeight
+                    end
+                    local height=math.max(44,bottom+6)
+                    if stacked then
+                        holder.AnchorPoint=Vector2.zero
+                        holder.Position=UDim2.fromOffset(12,bottom+6)
+                        holder.Size=UDim2.new(1,-24,0,36)
+                        height=bottom+48
+                    elseif compact and kind=="Slider" then
+                        holder.Position=UDim2.new(1,-14,0,title.Position.Y.Offset+titleHeight/2)
+                        height=math.max(70,bottom+44)
+                        native.Track.Position=UDim2.new(0,14,0,height-18)
+                        native.HitArea.Position=UDim2.new(0,8,0,height-38)
+                        native.HitArea.Size=UDim2.new(1,-16,0,38)
+                    elseif not compact then
+                        local titleAvailable=original.Title.Size.Y.Scale*original.Height+original.Title.Size.Y.Offset
+                        height=original.Height+math.max(0,titleHeight-titleAvailable)
+                            +(description and math.max(0,description.Size.Y.Offset-original.Description.Size.Y.Offset) or 0)
+                        if original.Title.Size.Y.Scale>0 and not description then
+                            title.AnchorPoint=Vector2.new(original.Title.AnchorPoint.X,.5)
+                            title.Position=UDim2.new(original.Title.Position.X.Scale,original.Title.Position.X.Offset,.5,0)
+                        end
+                    end
+                    if native.UISetHeaderHeight then native.UISetHeaderHeight(height) else frame.Size=UDim2.new(1,0,0,height) end
+                    local indicator=frame:FindFirstChild("ActionIndicator")
+                    if indicator then indicator.Size=UDim2.fromOffset(compact and 26 or (Airflow.Touch and 32 or 28),compact and 26 or (Airflow.Touch and 32 or 28)) end
+                end)
+            end
+            for _,label in ipairs(description and {title,description} or {title}) do
+                handle._connections[#handle._connections+1]=connect(label:GetPropertyChangedSignal("TextBounds"),arrange)
+            end
+            handle._connections[#handle._connections+1]=connect(frame:GetPropertyChangedSignal("AbsoluteSize"),arrange)
+            handle._connections[#handle._connections+1]=connect(window.Scale:GetPropertyChangedSignal("Scale"),arrange)
+            if holder then handle._connections[#handle._connections+1]=connect(holder:GetPropertyChangedSignal("AbsoluteSize"),arrange) end
+            arrange()
+        end
         local function basic(context, kind, config)
             config = type(config) == "table" and config or { Title = tostring(config or "") }
             assert(not Library._destroyed, "Airflow window has been destroyed")
@@ -4522,55 +4735,7 @@ local AdapterFactory = (function()
                     end
                 end
             end
-            if (config.DisplayTitle or config.DisplayDesc) and kind ~= "Paragraph" then
-                local title, description = handle.UIElements.Title, handle.UIElements.Desc
-                local baseHeight = handle.Frame.Size.Y.Offset
-                local titleHeight = title and title.Size.Y.Offset or 0
-                local descriptionHeight = description and description.Size.Y.Offset or 0
-                local descriptionPosition = description and description.Position
-                local labels = {}
-                if title then
-                    labels[#labels + 1] = title
-                end
-                if description then
-                    labels[#labels + 1] = description
-                end
-                for _, label in ipairs(labels) do
-                    label.TextWrapped = true;
-                    label.TextTruncate = Enum.TextTruncate.None
-                end
-                local scheduled = false
-                local function resizeLabels()
-                    if scheduled or handle._destroyed then
-                        return
-                    end
-                    scheduled = true
-                    task.defer(function()
-                        scheduled = false
-                        if handle._destroyed then
-                            return
-                        end
-                        local extraTitle = title and math.max(0, title.TextBounds.Y + 2 - titleHeight) or 0
-                        local extraDescription = description and math.max(0, description.TextBounds.Y + 2 - descriptionHeight) or 0
-                        if title then
-                            title.Size = UDim2.new(title.Size.X.Scale, title.Size.X.Offset, 0, titleHeight + extraTitle)
-                        end
-                        if description then
-                            description.Position = descriptionPosition + UDim2.fromOffset(0, extraTitle)
-                            description.Size = UDim2.new(description.Size.X.Scale, description.Size.X.Offset, 0, descriptionHeight + extraDescription)
-                        end
-                        local size = UDim2.new(handle.Frame.Size.X.Scale, handle.Frame.Size.X.Offset, 0, baseHeight + extraTitle + extraDescription)
-                        if not (kind == "Dropdown" and handle._native.Open) and handle.Frame.Size ~= size then
-                            handle.Frame.Size = size
-                        end
-                    end)
-                end
-                for _, label in ipairs(labels) do
-                    handle._connections[#handle._connections + 1] = connect(label:GetPropertyChangedSignal("TextBounds"), resizeLabels)
-                end
-                handle._connections[#handle._connections + 1] = connect(handle.Frame:GetPropertyChangedSignal("AbsoluteSize"), resizeLabels)
-                resizeLabels()
-            end
+            adaptControl(handle, kind, config)
             return handle
         end
         for _, kind in ipairs({ "Button", "Toggle", "Slider", "Dropdown", "Input", "Keybind", "Colorpicker", "Paragraph", "Label" }) do
@@ -5641,6 +5806,7 @@ local AdapterFactory = (function()
         end
         function WindowMethods:SetSize(size)
             self._native.Root.Size = size
+            self._native._preferredSize = size
             self._native:_fitToScreen(true)
             self._native:_clampToScreen()
             return self
@@ -5789,17 +5955,22 @@ local AdapterFactory = (function()
                     if width<=0 then return end
                     local actionsWidth=actions.AbsoluteSize.X/scale
                     local cardWidth=math.min(math.max(172,math.ceil(caption.TextBounds.X/scale+44)),math.max(44,width-48))
-                    local stacked=width<actionsWidth+cardWidth+96+60
-                    local extra=stacked and 40 or 0
+                    local separateActions=width<actionsWidth+160
+                    local actionsOffset=separateActions and 44 or 0
+                    actions.AnchorPoint=Vector2.new(1,0)
+                    actions.Position=UDim2.new(1,-12,0,4)
+                    actions.Size=UDim2.new(0,0,0,40)
+                    local stacked=separateActions or width<actionsWidth+cardWidth+96+60
+                    local extra=(stacked and 40 or 0)+actionsOffset
                     local active=window._native.CurrentTab
                     local headerHeight=active and (active._headerHeight
                         or active._websiteListPosition and active._websiteListPosition.Y.Offset
                         or active.List and active.List.Position.Y.Offset) or 58
                     card.Size=UDim2.fromOffset(cardWidth,30)
                     card.AnchorPoint=Vector2.new(stacked and 0 or 1,.5)
-                    card.Position=stacked and UDim2.fromOffset(24,headerHeight+12)
+                    card.Position=stacked and UDim2.fromOffset(24,headerHeight+actionsOffset+12)
                         or UDim2.new(1,-actionsWidth-24,0,32)
-                    topbar.Size=UDim2.new(1,0,0,stacked and headerHeight+40 or 48)
+                    topbar.Size=UDim2.new(1,0,0,stacked and headerHeight+extra or 48)
                     for _,tab in ipairs(window._native.Tabs) do
                         if not tab._heading and tab._page then
                             for _,child in ipairs(tab._page:GetChildren()) do
@@ -5810,7 +5981,9 @@ local AdapterFactory = (function()
                             end
                         end
                         if tab._heading then
-                            local titleWidth=math.max(0,width-actionsWidth-48-(stacked and 0 or cardWidth+12))
+                            local titleWidth=math.max(0,width-48-(separateActions and 0 or actionsWidth)-(stacked and 0 or cardWidth+12))
+                            tab._heading.Position=UDim2.fromOffset(24,20+actionsOffset)
+                            if tab._description then tab._description.Position=UDim2.fromOffset(24,44+actionsOffset) end
                             tab._heading.Size=UDim2.fromOffset(titleWidth,24)
                             if tab._description then tab._description.Size=UDim2.fromOffset(titleWidth,16) end
                         end
@@ -6069,7 +6242,7 @@ local AdapterFactory = (function()
             local native = Airflow:CreateWindow({
             Name = config.Title or "Interface", LoadingSubtitle = config.Author,
             Icon = Airflow.Assets.Logo, Size = config.Size, MinSize = config.MinSize, MaxSize = config.MaxSize,
-            ToggleUIKeybind = Enum.KeyCode.Unknown, KeepOnScreen = true, OpenButton = false,
+            ToggleUIKeybind = Enum.KeyCode.Unknown, KeepOnScreen = config.KeepOnScreen == true, Responsive = config.Responsive ~= false, OpenButton = false,
             Loading = false, Parent = self._parent, MaxNotifications = 8,
             ConfigurationSaving = { Enabled = false },
         })
